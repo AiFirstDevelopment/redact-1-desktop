@@ -54,12 +54,12 @@
                 </StackPanel>
 
                 <!-- Error Message -->
-                <Border Background="#FEE2E2"
+                <Border Background="#F5E5E5"
                         CornerRadius="10"
                         Padding="14"
                         IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                     <TextBlock Text="{Binding ErrorMessage}"
-                               Foreground="#DC2626"
+                               Foreground="#A06A69"
                                FontSize="13"
                                TextWrapping="Wrap"/>
                 </Border>

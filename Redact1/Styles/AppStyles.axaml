@@ -1,34 +1,34 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Modern Color Palette - Warm, professional, engaging -->
+    <!-- Modern Color Palette - Warm brick with soft pastels -->
     <Style>
         <Style.Resources>
-            <!-- Primary - Rich indigo -->
-            <Color x:Key="PrimaryColor">#5B4ED9</Color>
-            <Color x:Key="PrimaryLightColor">#7C6FE8</Color>
-            <Color x:Key="PrimaryDarkColor">#4338CA</Color>
+            <!-- Primary - Muted brick/terracotta -->
+            <Color x:Key="PrimaryColor">#B07D62</Color>
+            <Color x:Key="PrimaryLightColor">#C99A82</Color>
+            <Color x:Key="PrimaryDarkColor">#8B5E47</Color>
 
-            <!-- Accent - Vibrant blue -->
-            <Color x:Key="AccentColor">#3B82F6</Color>
+            <!-- Accent - Soft dusty rose -->
+            <Color x:Key="AccentColor">#C9A9A6</Color>
 
-            <!-- Semantic colors -->
-            <Color x:Key="SuccessColor">#10B981</Color>
-            <Color x:Key="WarningColor">#F59E0B</Color>
-            <Color x:Key="ErrorColor">#EF4444</Color>
-            <Color x:Key="InfoColor">#3B82F6</Color>
+            <!-- Semantic colors - Soft pastels, not vivid -->
+            <Color x:Key="SuccessColor">#8FB8A0</Color>
+            <Color x:Key="WarningColor">#D4B896</Color>
+            <Color x:Key="ErrorColor">#C9908F</Color>
+            <Color x:Key="InfoColor">#9BB5C9</Color>
 
-            <!-- Surfaces - Warm with subtle tints -->
-            <Color x:Key="BackgroundColor">#F5F3FF</Color>
-            <Color x:Key="SidebarColor">#EDE9FE</Color>
+            <!-- Surfaces - Warm cream tones -->
+            <Color x:Key="BackgroundColor">#FAF7F4</Color>
+            <Color x:Key="SidebarColor">#F5EDE6</Color>
             <Color x:Key="SurfaceColor">#FFFFFF</Color>
-            <Color x:Key="SurfaceHoverColor">#F3F2F7</Color>
-            <Color x:Key="BorderColor">#DDD6FE</Color>
+            <Color x:Key="SurfaceHoverColor">#F8F4F0</Color>
+            <Color x:Key="BorderColor">#E5DDD5</Color>
 
             <!-- Text -->
-            <Color x:Key="TextPrimaryColor">#1F1F2E</Color>
-            <Color x:Key="TextSecondaryColor">#6B6B80</Color>
-            <Color x:Key="TextMutedColor">#9B9BAD</Color>
+            <Color x:Key="TextPrimaryColor">#3D3632</Color>
+            <Color x:Key="TextSecondaryColor">#6B6058</Color>
+            <Color x:Key="TextMutedColor">#9A918A</Color>
 
             <!-- Brushes -->
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
@@ -91,7 +91,7 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
-    <!-- Danger Button -->
+    <!-- Danger Button - Soft rose -->
     <Style Selector="Button.danger">
         <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -102,11 +102,11 @@
         <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#DC2626" />
+        <Setter Property="Background" Value="#B57D7C" />
         <Setter Property="Foreground" Value="White" />
     </Style>
     <Style Selector="Button.danger:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="#B91C1C" />
+        <Setter Property="Background" Value="#A06A69" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -165,7 +165,7 @@
     <!-- Elevated Card -->
     <Style Selector="Border.card-elevated">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="#E0DDE8" />
+        <Setter Property="BorderBrush" Value="#DDD5CC" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="24" />
@@ -183,23 +183,23 @@
         <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}" />
     </Style>
 
-    <!-- Status badges -->
+    <!-- Status badges - Soft pastels -->
     <Style Selector="Border.badge">
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Border.badge-success">
-        <Setter Property="Background" Value="#D1FAE5" />
+        <Setter Property="Background" Value="#E5F0E9" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Border.badge-warning">
-        <Setter Property="Background" Value="#FEF3C7" />
+        <Setter Property="Background" Value="#F5EDE0" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Border.badge-error">
-        <Setter Property="Background" Value="#FEE2E2" />
+        <Setter Property="Background" Value="#F5E5E5" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="CornerRadius" Value="6" />
     </Style>

@@ -100,12 +100,12 @@
                     <TextBox x:Name="EditPasswordBox" PasswordChar="*" Classes="modern" Margin="0,0,0,24" />
 
                     <!-- Error Message -->
-                    <Border Background="#FED7D7"
+                    <Border Background="#F5E5E5"
                             CornerRadius="6"
                             Padding="12"
                             Margin="0,0,0,16"
                             IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#C53030" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#A06A69" TextWrapping="Wrap" />
                     </Border>
 
                     <Grid>

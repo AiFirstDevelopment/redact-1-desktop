@@ -4,25 +4,47 @@
              Background="{StaticResource SurfaceBrush}">
 
     <UserControl.Styles>
-        <!-- Header buttons with dark text for yellow hover -->
+        <!-- Header buttons with soft pastel hover - override all states -->
         <Style Selector="Button.header-btn">
-            <Setter Property="Background" Value="#FFFFFF25" />
-            <Setter Property="Foreground" Value="#1A1A2E" />
-            <Setter Property="BorderBrush" Value="#FFFFFF50" />
-            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Background" Value="#D4B8A8" />
+            <Setter Property="Foreground" Value="#3D3632" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="16,10" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
+        <Style Selector="Button.header-btn:pointerover">
+            <Setter Property="Background" Value="#E5CFC2" />
+        </Style>
+        <Style Selector="Button.header-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E5CFC2" />
+            <Setter Property="Foreground" Value="#3D3632" />
+        </Style>
+        <Style Selector="Button.header-btn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C9A999" />
+            <Setter Property="Foreground" Value="#3D3632" />
+        </Style>
 
         <Style Selector="Button.header-save">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="Foreground" Value="#5B4ED9" />
+            <Setter Property="Background" Value="#FAF7F4" />
+            <Setter Property="Foreground" Value="#8B5E47" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="18,10" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.header-save:pointerover">
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="Button.header-save:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#8B5E47" />
+        </Style>
+        <Style Selector="Button.header-save:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F0EBE6" />
+            <Setter Property="Foreground" Value="#8B5E47" />
         </Style>
     </UserControl.Styles>
 
@@ -86,7 +108,7 @@
                          Margin="0,0,0,24" />
 
                 <!-- Files Section -->
-                <Border Background="#F5F3FF" CornerRadius="10" Padding="16" Margin="0,0,0,16">
+                <Border Background="#F5EDE6" CornerRadius="10" Padding="16" Margin="0,0,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -145,7 +167,7 @@
                              IsVisible="{Binding IsUploading}" />
 
                 <!-- Exports Section -->
-                <Border Background="#ECFDF5" CornerRadius="10" Padding="16" Margin="0,8,0,16">
+                <Border Background="#E5F0E9" CornerRadius="10" Padding="16" Margin="0,8,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -200,7 +222,7 @@
                 </ItemsControl>
 
                 <!-- Actions Section -->
-                <Border Background="#FEF3C7" CornerRadius="10" Padding="16" Margin="0,24,0,0">
+                <Border Background="#F5EDE0" CornerRadius="10" Padding="16" Margin="0,24,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

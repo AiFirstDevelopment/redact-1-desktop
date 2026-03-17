@@ -57,14 +57,14 @@
 
         <!-- Error Message -->
         <Border Grid.Row="2"
-                Background="#FEE2E2"
+                Background="#F5E5E5"
                 CornerRadius="10"
                 Padding="14"
                 Margin="0,0,0,12"
                 VerticalAlignment="Top"
                 IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
             <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="#DC2626"
+                       Foreground="#A06A69"
                        FontSize="13"
                        TextWrapping="Wrap"/>
         </Border>

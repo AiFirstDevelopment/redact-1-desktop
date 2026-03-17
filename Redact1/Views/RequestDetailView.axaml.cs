@@ -1,9 +1,9 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.ViewModels;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace Redact1.Views
 {
@@ -17,6 +17,8 @@ namespace Redact1.Views
         public RequestDetailView()
         {
             InitializeComponent();
+
+            CloseButton.Click += (s, e) => _viewModel?.CloseCommand.Execute(null);
         }
 
         public async void LoadRequest(string requestId)
@@ -30,22 +32,12 @@ namespace Redact1.Views
             await _viewModel.LoadRequestAsync(requestId);
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void FileItem_Click(object? sender, PointerPressedEventArgs e)
         {
-            _viewModel?.CloseCommand.Execute(null);
-        }
-
-        private void FileItem_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.DataContext is EvidenceFile file)
+            if (sender is Border border && border.DataContext is EvidenceFile file)
             {
                 _viewModel?.OpenFileCommand.Execute(file);
             }
-        }
-
-        private void DeleteFile_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true; // Prevent triggering the parent click
         }
     }
 }

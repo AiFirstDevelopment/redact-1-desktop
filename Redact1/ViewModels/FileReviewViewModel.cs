@@ -1,14 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.Media.Imaging;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.Services;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
+using System.Windows.Input;
 
 namespace Redact1.ViewModels
 {
-    public partial class FileReviewViewModel : ViewModelBase
+    public class FileReviewViewModel : ViewModelBase
     {
         private readonly IApiService _apiService;
         private readonly IDetectionService _detectionService;
@@ -17,38 +16,96 @@ namespace Redact1.ViewModels
         private byte[]? _originalFileData;
         private byte[]? _redactedFileData;
 
-        [ObservableProperty]
         private EvidenceFile? _file;
-
-        [ObservableProperty]
         private ObservableCollection<Detection> _detections = new();
-
-        [ObservableProperty]
         private ObservableCollection<ManualRedaction> _manualRedactions = new();
-
-        [ObservableProperty]
         private Detection? _selectedDetection;
-
-        [ObservableProperty]
-        private BitmapImage? _displayImage;
-
-        [ObservableProperty]
-        private BitmapImage? _redactedImage;
-
-        [ObservableProperty]
+        private Bitmap? _displayImage;
+        private Bitmap? _redactedImage;
         private int _currentPage = 1;
-
-        [ObservableProperty]
         private int _totalPages = 1;
-
-        [ObservableProperty]
         private bool _isDetecting;
-
-        [ObservableProperty]
         private bool _showRedacted;
-
-        [ObservableProperty]
         private bool _isDrawingMode;
+
+        public EvidenceFile? File
+        {
+            get => _file;
+            set => SetProperty(ref _file, value);
+        }
+
+        public ObservableCollection<Detection> Detections
+        {
+            get => _detections;
+            set => SetProperty(ref _detections, value);
+        }
+
+        public ObservableCollection<ManualRedaction> ManualRedactions
+        {
+            get => _manualRedactions;
+            set => SetProperty(ref _manualRedactions, value);
+        }
+
+        public Detection? SelectedDetection
+        {
+            get => _selectedDetection;
+            set => SetProperty(ref _selectedDetection, value);
+        }
+
+        public Bitmap? DisplayImage
+        {
+            get => _displayImage;
+            set => SetProperty(ref _displayImage, value);
+        }
+
+        public Bitmap? RedactedImage
+        {
+            get => _redactedImage;
+            set => SetProperty(ref _redactedImage, value);
+        }
+
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
+        }
+
+        public int TotalPages
+        {
+            get => _totalPages;
+            set => SetProperty(ref _totalPages, value);
+        }
+
+        public bool IsDetecting
+        {
+            get => _isDetecting;
+            set => SetProperty(ref _isDetecting, value);
+        }
+
+        public bool ShowRedacted
+        {
+            get => _showRedacted;
+            set => SetProperty(ref _showRedacted, value);
+        }
+
+        public bool IsDrawingMode
+        {
+            get => _isDrawingMode;
+            set => SetProperty(ref _isDrawingMode, value);
+        }
+
+        public ICommand LoadDetectionsCommand { get; }
+        public ICommand RunDetectionCommand { get; }
+        public ICommand ApproveDetectionCommand { get; }
+        public ICommand RejectDetectionCommand { get; }
+        public ICommand ApproveAllCommand { get; }
+        public ICommand DeleteManualRedactionCommand { get; }
+        public ICommand PreviewRedactedCommand { get; }
+        public ICommand SaveRedactedCommand { get; }
+        public ICommand NextPageCommand { get; }
+        public ICommand PreviousPageCommand { get; }
+        public ICommand ToggleDrawingModeCommand { get; }
+        public ICommand CloseCommand { get; }
 
         public event EventHandler? FileClosed;
 
@@ -57,6 +114,19 @@ namespace Redact1.ViewModels
             _apiService = App.Services.GetRequiredService<IApiService>();
             _detectionService = App.Services.GetRequiredService<IDetectionService>();
             _redactionService = App.Services.GetRequiredService<IRedactionService>();
+
+            LoadDetectionsCommand = new AsyncRelayCommand(LoadDetectionsAsync);
+            RunDetectionCommand = new AsyncRelayCommand(RunDetectionAsync);
+            ApproveDetectionCommand = new AsyncRelayCommand<Detection>(ApproveDetectionAsync);
+            RejectDetectionCommand = new AsyncRelayCommand<Detection>(RejectDetectionAsync);
+            ApproveAllCommand = new AsyncRelayCommand(ApproveAllAsync);
+            DeleteManualRedactionCommand = new AsyncRelayCommand<ManualRedaction>(DeleteManualRedactionAsync);
+            PreviewRedactedCommand = new AsyncRelayCommand(PreviewRedactedAsync);
+            SaveRedactedCommand = new AsyncRelayCommand(SaveRedactedAsync);
+            NextPageCommand = new AsyncRelayCommand(NextPageAsync);
+            PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
+            ToggleDrawingModeCommand = new RelayCommand(ToggleDrawingMode);
+            CloseCommand = new RelayCommand(Close);
         }
 
         public async Task LoadFileAsync(string fileId)
@@ -72,11 +142,11 @@ namespace Redact1.ViewModels
                 if (File.IsPdf)
                 {
                     TotalPages = _redactionService.GetPdfPageCount(_originalFileData);
-                    await LoadPdfPageAsync(1);
+                    await LoadPdfPage(1);
                 }
                 else
                 {
-                    await LoadImageAsync();
+                    await LoadImage();
                 }
 
                 await LoadDetectionsAsync();
@@ -91,44 +161,33 @@ namespace Redact1.ViewModels
             }
         }
 
-        private async Task LoadImageAsync()
+        private async Task LoadImage()
         {
             if (_originalFileData == null) return;
 
             await Task.Run(() =>
             {
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = new MemoryStream(_originalFileData);
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.EndInit();
-                image.Freeze();
+                using var ms = new MemoryStream(_originalFileData);
+                var bitmap = new Bitmap(ms);
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    DisplayImage = image;
+                    DisplayImage = bitmap;
                 });
             });
         }
 
-        private async Task LoadPdfPageAsync(int pageNumber)
+        private async Task LoadPdfPage(int pageNumber)
         {
             if (_originalFileData == null) return;
 
             var pageImage = await _redactionService.RenderPdfPageToImageAsync(_originalFileData, pageNumber);
 
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.StreamSource = new MemoryStream(pageImage);
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.EndInit();
-            image.Freeze();
-
-            DisplayImage = image;
+            using var ms = new MemoryStream(pageImage);
+            DisplayImage = new Bitmap(ms);
             CurrentPage = pageNumber;
         }
 
-        [RelayCommand]
         private async Task LoadDetectionsAsync()
         {
             if (File == null) return;
@@ -155,7 +214,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task RunDetectionAsync()
         {
             if (File == null || _originalFileData == null) return;
@@ -165,7 +223,6 @@ namespace Redact1.ViewModels
 
             try
             {
-                // Clear existing detections
                 await _apiService.ClearDetectionsAsync(File.Id);
                 Detections.Clear();
 
@@ -205,9 +262,10 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task ApproveDetectionAsync(Detection detection)
+        private async Task ApproveDetectionAsync(Detection? detection)
         {
+            if (detection == null) return;
+
             try
             {
                 var updated = await _apiService.UpdateDetectionAsync(
@@ -227,9 +285,10 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task RejectDetectionAsync(Detection detection)
+        private async Task RejectDetectionAsync(Detection? detection)
         {
+            if (detection == null) return;
+
             try
             {
                 var updated = await _apiService.UpdateDetectionAsync(
@@ -249,7 +308,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task ApproveAllAsync()
         {
             foreach (var detection in Detections.Where(d => d.Status == "pending").ToList())
@@ -282,9 +340,10 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task DeleteManualRedactionAsync(ManualRedaction redaction)
+        private async Task DeleteManualRedactionAsync(ManualRedaction? redaction)
         {
+            if (redaction == null) return;
+
             try
             {
                 await _apiService.DeleteManualRedactionAsync(redaction.Id);
@@ -296,7 +355,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task PreviewRedactedAsync()
         {
             if (File == null || _originalFileData == null) return;
@@ -328,13 +386,8 @@ namespace Redact1.ViewModels
 
                 if (File.IsImage)
                 {
-                    var image = new BitmapImage();
-                    image.BeginInit();
-                    image.StreamSource = new MemoryStream(redactedData);
-                    image.CacheOption = BitmapCacheOption.OnLoad;
-                    image.EndInit();
-                    image.Freeze();
-                    RedactedImage = image;
+                    using var ms = new MemoryStream(redactedData);
+                    RedactedImage = new Bitmap(ms);
                 }
 
                 ShowRedacted = true;
@@ -349,7 +402,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task SaveRedactedAsync()
         {
             if (File == null || _redactedFileData == null) return;
@@ -374,31 +426,27 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task NextPageAsync()
         {
             if (CurrentPage < TotalPages)
             {
-                await LoadPdfPageAsync(CurrentPage + 1);
+                await LoadPdfPage(CurrentPage + 1);
             }
         }
 
-        [RelayCommand]
         private async Task PreviousPageAsync()
         {
             if (CurrentPage > 1)
             {
-                await LoadPdfPageAsync(CurrentPage - 1);
+                await LoadPdfPage(CurrentPage - 1);
             }
         }
 
-        [RelayCommand]
         private void ToggleDrawingMode()
         {
             IsDrawingMode = !IsDrawingMode;
         }
 
-        [RelayCommand]
         private void Close()
         {
             FileClosed?.Invoke(this, EventArgs.Empty);

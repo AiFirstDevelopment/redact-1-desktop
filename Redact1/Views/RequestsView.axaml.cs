@@ -1,9 +1,9 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.ViewModels;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace Redact1.Views
 {
@@ -16,6 +16,14 @@ namespace Redact1.Views
         public RequestsView()
         {
             InitializeComponent();
+
+            CreateButton.Click += (s, e) =>
+            {
+                if (_viewModel != null)
+                {
+                    _viewModel.CreateRequestCommand.Execute(null);
+                }
+            };
         }
 
         public void Initialize(bool showArchived = false)
@@ -27,23 +35,15 @@ namespace Redact1.Views
             DataContext = _viewModel;
 
             TitleText.Text = showArchived ? "Archived Requests" : "Records Requests";
-            CreateButton.Visibility = showArchived ? Visibility.Collapsed : Visibility.Visible;
-            StatusFilter.Visibility = showArchived ? Visibility.Collapsed : Visibility.Visible;
+            CreateButton.IsVisible = !showArchived;
+            StatusFilter.IsVisible = !showArchived;
 
             _ = _viewModel.LoadRequestsAsync();
         }
 
-        private async void CreateButton_Click(object sender, RoutedEventArgs e)
+        private void RequestItem_Click(object? sender, PointerPressedEventArgs e)
         {
-            if (_viewModel != null)
-            {
-                await _viewModel.CreateRequestCommand.ExecuteAsync(null);
-            }
-        }
-
-        private void RequestItem_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.DataContext is RecordsRequest request)
+            if (sender is Border border && border.DataContext is RecordsRequest request)
             {
                 _viewModel?.OpenRequestCommand.Execute(request);
             }

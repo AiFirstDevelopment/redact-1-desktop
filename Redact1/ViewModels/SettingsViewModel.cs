@@ -1,21 +1,34 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.Services;
+using System.Diagnostics;
 using System.Reflection;
+using System.Windows.Input;
 
 namespace Redact1.ViewModels
 {
-    public partial class SettingsViewModel : ViewModelBase
+    public class SettingsViewModel : ViewModelBase
     {
         private readonly IAuthService _authService;
 
-        [ObservableProperty]
         private User? _currentUser;
-
-        [ObservableProperty]
         private string _appVersion = string.Empty;
+
+        public User? CurrentUser
+        {
+            get => _currentUser;
+            set => SetProperty(ref _currentUser, value);
+        }
+
+        public string AppVersion
+        {
+            get => _appVersion;
+            set => SetProperty(ref _appVersion, value);
+        }
+
+        public ICommand LogoutCommand { get; }
+        public ICommand OpenSupportCommand { get; }
+        public ICommand OpenAboutCommand { get; }
 
         public event EventHandler? LoggedOut;
 
@@ -26,9 +39,12 @@ namespace Redact1.ViewModels
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             AppVersion = version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.0.0";
+
+            LogoutCommand = new AsyncRelayCommand(LogoutAsync);
+            OpenSupportCommand = new RelayCommand(OpenSupport);
+            OpenAboutCommand = new RelayCommand(OpenAbout);
         }
 
-        [RelayCommand]
         private async Task LogoutAsync()
         {
             IsLoading = true;
@@ -44,26 +60,25 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private void OpenSupport()
         {
-            var psi = new System.Diagnostics.ProcessStartInfo
+            try
             {
-                FileName = "mailto:support@redact1.com",
-                UseShellExecute = true
-            };
-            System.Diagnostics.Process.Start(psi);
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "mailto:support@redact1.com",
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                // Ignore if mailto handler not available
+            }
         }
 
-        [RelayCommand]
         private void OpenAbout()
         {
-            System.Windows.MessageBox.Show(
-                $"Redact-1 for Windows\n{AppVersion}\n\nPolice records redaction system for FOIA requests.",
-                "About Redact-1",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information
-            );
+            // Placeholder for about dialog
         }
     }
 }

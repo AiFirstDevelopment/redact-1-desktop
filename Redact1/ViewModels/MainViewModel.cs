@@ -1,25 +1,35 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.Services;
+using System.Windows.Input;
 
 namespace Redact1.ViewModels
 {
-    public partial class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
         private readonly IAuthService _authService;
-
-        [ObservableProperty]
         private User? _currentUser;
-
-        [ObservableProperty]
         private int _selectedTabIndex;
 
-        [ObservableProperty]
-        private object? _currentContent;
+        public User? CurrentUser
+        {
+            get => _currentUser;
+            set
+            {
+                SetProperty(ref _currentUser, value);
+                OnPropertyChanged(nameof(IsSupervisor));
+            }
+        }
+
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set => SetProperty(ref _selectedTabIndex, value);
+        }
 
         public bool IsSupervisor => CurrentUser?.IsSupervisor ?? false;
+
+        public ICommand LogoutCommand { get; }
 
         public event EventHandler? LoggedOut;
 
@@ -27,11 +37,11 @@ namespace Redact1.ViewModels
         {
             _authService = App.Services.GetRequiredService<IAuthService>();
             CurrentUser = _authService.CurrentUser;
+            LogoutCommand = new AsyncRelayCommand(LogoutAsync);
 
             _authService.AuthStateChanged += (s, user) =>
             {
                 CurrentUser = user;
-                OnPropertyChanged(nameof(IsSupervisor));
                 if (user == null)
                 {
                     LoggedOut?.Invoke(this, EventArgs.Empty);
@@ -39,7 +49,6 @@ namespace Redact1.ViewModels
             };
         }
 
-        [RelayCommand]
         private async Task LogoutAsync()
         {
             IsLoading = true;
@@ -51,33 +60,6 @@ namespace Redact1.ViewModels
             {
                 IsLoading = false;
             }
-        }
-
-        [RelayCommand]
-        private void NavigateToRequests()
-        {
-            SelectedTabIndex = 0;
-        }
-
-        [RelayCommand]
-        private void NavigateToArchived()
-        {
-            SelectedTabIndex = 1;
-        }
-
-        [RelayCommand]
-        private void NavigateToUsers()
-        {
-            if (IsSupervisor)
-            {
-                SelectedTabIndex = 2;
-            }
-        }
-
-        [RelayCommand]
-        private void NavigateToSettings()
-        {
-            SelectedTabIndex = IsSupervisor ? 3 : 2;
         }
     }
 }

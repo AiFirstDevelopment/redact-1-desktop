@@ -2,8 +2,11 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using Redact1.Models;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Redact1.Services
 {
@@ -13,43 +16,39 @@ namespace Redact1.Services
         {
             return await Task.Run(() =>
             {
-                using var ms = new MemoryStream(imageData);
-                using var original = new Bitmap(ms);
-                using var graphics = Graphics.FromImage(original);
+                using var image = Image.Load<Rgba32>(imageData);
+                var width = image.Width;
+                var height = image.Height;
 
-                var width = original.Width;
-                var height = original.Height;
-
-                // Draw approved detections as black boxes
-                foreach (var detection in detections.Where(d => d.Status == "approved" && d.HasBoundingBox))
+                image.Mutate(ctx =>
                 {
-                    var rect = new Rectangle(
-                        (int)(detection.BboxX!.Value * width),
-                        (int)(detection.BboxY!.Value * height),
-                        (int)(detection.BboxWidth!.Value * width),
-                        (int)(detection.BboxHeight!.Value * height)
-                    );
-                    graphics.FillRectangle(Brushes.Black, rect);
-                }
+                    // Draw approved detections as black boxes
+                    foreach (var detection in detections.Where(d => d.Status == "approved" && d.HasBoundingBox))
+                    {
+                        var rect = new RectangleF(
+                            (float)(detection.BboxX!.Value * width),
+                            (float)(detection.BboxY!.Value * height),
+                            (float)(detection.BboxWidth!.Value * width),
+                            (float)(detection.BboxHeight!.Value * height)
+                        );
+                        ctx.Fill(Color.Black, rect);
+                    }
 
-                // Draw manual redactions as black boxes
-                foreach (var redaction in manualRedactions.Where(r => r.BboxX.HasValue))
-                {
-                    var rect = new Rectangle(
-                        (int)(redaction.BboxX!.Value * width),
-                        (int)(redaction.BboxY!.Value * height),
-                        (int)(redaction.BboxWidth!.Value * width),
-                        (int)(redaction.BboxHeight!.Value * height)
-                    );
-                    graphics.FillRectangle(Brushes.Black, rect);
-                }
+                    // Draw manual redactions as black boxes
+                    foreach (var redaction in manualRedactions.Where(r => r.BboxX.HasValue))
+                    {
+                        var rect = new RectangleF(
+                            (float)(redaction.BboxX!.Value * width),
+                            (float)(redaction.BboxY!.Value * height),
+                            (float)(redaction.BboxWidth!.Value * width),
+                            (float)(redaction.BboxHeight!.Value * height)
+                        );
+                        ctx.Fill(Color.Black, rect);
+                    }
+                });
 
-                // Save as JPEG with 90% quality
                 using var output = new MemoryStream();
-                var encoder = GetEncoder(ImageFormat.Jpeg);
-                var encoderParams = new EncoderParameters(1);
-                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 90L);
-                original.Save(output, encoder, encoderParams);
+                image.Save(output, new JpegEncoder { Quality = 90 });
                 return output.ToArray();
             });
         }
@@ -129,19 +128,18 @@ namespace Redact1.Services
                 var width = (int)(page.Width.Point * scale);
                 var height = (int)(page.Height.Point * scale);
 
-                // Create a bitmap and render the page
-                using var bitmap = new Bitmap(width, height);
-                using var graphics = Graphics.FromImage(bitmap);
-                graphics.Clear(Color.White);
-                graphics.ScaleTransform((float)scale, (float)scale);
+                // Create a placeholder image (PDF rendering requires platform-specific libraries)
+                // In production, use PDFium or similar for actual PDF rendering
+                using var image = new Image<Rgba32>(width, height, Color.White);
 
-                // Note: PdfSharp doesn't have built-in rendering to bitmap
-                // In production, you'd use a library like PdfiumViewer or PDFtoImage
-                // For now, return a placeholder image
-                graphics.DrawString($"Page {pageNumber}", new Font("Arial", 24), Brushes.Black, 10, 10);
+                image.Mutate(ctx =>
+                {
+                    // Draw placeholder text
+                    // In production, this would render actual PDF content
+                });
 
                 using var output = new MemoryStream();
-                bitmap.Save(output, ImageFormat.Png);
+                image.SaveAsPng(output);
                 return output.ToArray();
             });
         }
@@ -151,19 +149,6 @@ namespace Redact1.Services
             using var stream = new MemoryStream(pdfData);
             var doc = PdfReader.Open(stream, PdfDocumentOpenMode.InformationOnly);
             return doc.PageCount;
-        }
-
-        private static ImageCodecInfo GetEncoder(ImageFormat format)
-        {
-            var codecs = ImageCodecInfo.GetImageEncoders();
-            foreach (var codec in codecs)
-            {
-                if (codec.FormatID == format.Guid)
-                {
-                    return codec;
-                }
-            }
-            return codecs[0];
         }
     }
 }

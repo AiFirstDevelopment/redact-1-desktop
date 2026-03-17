@@ -1,8 +1,9 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.Services;
 using Redact1.ViewModels;
-using System.Windows;
 
 namespace Redact1.Views
 {
@@ -19,11 +20,18 @@ namespace Redact1.Views
             _authService.AuthStateChanged += OnAuthStateChanged;
 
             Loaded += OnLoaded;
+            LogoutButton.Click += LogoutButton_Click;
         }
 
-        private async void OnLoaded(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            // Try to restore session
+            // Check if enrolled first
+            if (!_authService.IsEnrolled)
+            {
+                ShowEnrollment();
+                return;
+            }
+
             var restored = await _authService.TryRestoreSessionAsync();
 
             if (restored)
@@ -38,7 +46,7 @@ namespace Redact1.Views
 
         private void OnAuthStateChanged(object? sender, User? user)
         {
-            Dispatcher.Invoke(() =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 if (user != null)
                 {
@@ -46,17 +54,39 @@ namespace Redact1.Views
                 }
                 else
                 {
-                    ShowLogin();
+                    // Check if still enrolled
+                    if (_authService.IsEnrolled)
+                    {
+                        ShowLogin();
+                    }
+                    else
+                    {
+                        ShowEnrollment();
+                    }
                 }
             });
         }
 
+        private void ShowEnrollment()
+        {
+            EnrollmentView.IsVisible = true;
+            LoginView.IsVisible = false;
+            MainContent.IsVisible = false;
+            DetailPanel.IsVisible = false;
+            FileReviewPanel.IsVisible = false;
+
+            var enrollmentViewModel = App.Services.GetRequiredService<EnrollmentViewModel>();
+            enrollmentViewModel.EnrollmentComplete += (s, e) => ShowLogin();
+            EnrollmentView.DataContext = enrollmentViewModel;
+        }
+
         private void ShowLogin()
         {
-            LoginView.Visibility = Visibility.Visible;
-            MainContent.Visibility = Visibility.Collapsed;
-            DetailPanel.Visibility = Visibility.Collapsed;
-            FileReviewPanel.Visibility = Visibility.Collapsed;
+            EnrollmentView.IsVisible = false;
+            LoginView.IsVisible = true;
+            MainContent.IsVisible = false;
+            DetailPanel.IsVisible = false;
+            FileReviewPanel.IsVisible = false;
 
             var loginViewModel = App.Services.GetRequiredService<LoginViewModel>();
             loginViewModel.LoginSucceeded += (s, e) => ShowMainContent();
@@ -65,20 +95,17 @@ namespace Redact1.Views
 
         private void ShowMainContent()
         {
-            LoginView.Visibility = Visibility.Collapsed;
-            MainContent.Visibility = Visibility.Visible;
+            EnrollmentView.IsVisible = false;
+            LoginView.IsVisible = false;
+            MainContent.IsVisible = true;
 
             _viewModel = App.Services.GetRequiredService<MainViewModel>();
             DataContext = _viewModel;
 
             UserNameText.Text = _authService.CurrentUser?.Name ?? "User";
 
-            // Hide Users tab for non-supervisors
-            UsersTab.Visibility = _authService.CurrentUser?.IsSupervisor == true
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            UsersTab.IsVisible = _authService.CurrentUser?.IsSupervisor == true;
 
-            // Initialize views
             InitializeRequestsView(RequestsView, false);
             InitializeRequestsView(ArchivedView, true);
             UsersView.Initialize();
@@ -93,7 +120,7 @@ namespace Redact1.Views
 
         private void OnRequestSelected(object? sender, RecordsRequest request)
         {
-            DetailPanel.Visibility = Visibility.Visible;
+            DetailPanel.IsVisible = true;
             RequestDetailView.LoadRequest(request.Id);
             RequestDetailView.FileSelected += OnFileSelected;
             RequestDetailView.RequestClosed += OnRequestClosed;
@@ -101,25 +128,25 @@ namespace Redact1.Views
 
         private void OnRequestClosed(object? sender, EventArgs e)
         {
-            DetailPanel.Visibility = Visibility.Collapsed;
+            DetailPanel.IsVisible = false;
             RequestDetailView.FileSelected -= OnFileSelected;
             RequestDetailView.RequestClosed -= OnRequestClosed;
         }
 
         private void OnFileSelected(object? sender, EvidenceFile file)
         {
-            FileReviewPanel.Visibility = Visibility.Visible;
+            FileReviewPanel.IsVisible = true;
             FileReviewView.LoadFile(file.Id);
             FileReviewView.FileClosed += OnFileClosed;
         }
 
         private void OnFileClosed(object? sender, EventArgs e)
         {
-            FileReviewPanel.Visibility = Visibility.Collapsed;
+            FileReviewPanel.IsVisible = false;
             FileReviewView.FileClosed -= OnFileClosed;
         }
 
-        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+        private async void LogoutButton_Click(object? sender, RoutedEventArgs e)
         {
             await _authService.LogoutAsync();
         }

@@ -1,10 +1,10 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Input;
+using Avalonia.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.ViewModels;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace Redact1.Views
 {
@@ -20,6 +20,8 @@ namespace Redact1.Views
         public FileReviewView()
         {
             InitializeComponent();
+
+            CloseButton.Click += (s, e) => _viewModel?.CloseCommand.Execute(null);
         }
 
         public async void LoadFile(string fileId)
@@ -31,8 +33,13 @@ namespace Redact1.Views
 
             await _viewModel.LoadFileAsync(fileId);
 
-            // Draw detection overlays after image loads
-            DisplayImage.Loaded += (s, e) => DrawOverlays();
+            DisplayImage.PropertyChanged += (s, e) =>
+            {
+                if (e.Property.Name == "Bounds")
+                {
+                    DrawOverlays();
+                }
+            };
         }
 
         private void DrawOverlays()
@@ -41,8 +48,8 @@ namespace Redact1.Views
 
             OverlayCanvas.Children.Clear();
 
-            var imageWidth = DisplayImage.ActualWidth;
-            var imageHeight = DisplayImage.ActualHeight;
+            var imageWidth = DisplayImage.Bounds.Width;
+            var imageHeight = DisplayImage.Bounds.Height;
 
             if (imageWidth <= 0 || imageHeight <= 0) return;
 
@@ -87,7 +94,7 @@ namespace Redact1.Views
             }
         }
 
-        private Brush GetStatusBrush(string status)
+        private IBrush GetStatusBrush(string status)
         {
             return status switch
             {
@@ -97,7 +104,7 @@ namespace Redact1.Views
             };
         }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (_viewModel?.IsDrawingMode != true) return;
 
@@ -108,7 +115,7 @@ namespace Redact1.Views
             {
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 4, 2 },
+                StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { 4, 2 },
                 Fill = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0))
             };
 
@@ -116,10 +123,10 @@ namespace Redact1.Views
             Canvas.SetTop(_currentRect, _startPoint.Y);
 
             OverlayCanvas.Children.Add(_currentRect);
-            OverlayCanvas.CaptureMouse();
+            e.Pointer.Capture(OverlayCanvas);
         }
 
-        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        private void Canvas_PointerMoved(object? sender, PointerEventArgs e)
         {
             if (!_isDrawing || _currentRect == null) return;
 
@@ -136,25 +143,23 @@ namespace Redact1.Views
             _currentRect.Height = height;
         }
 
-        private async void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private async void Canvas_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             if (!_isDrawing || _currentRect == null || _viewModel == null) return;
 
             _isDrawing = false;
-            OverlayCanvas.ReleaseMouseCapture();
+            e.Pointer.Capture(null);
 
-            var imageWidth = DisplayImage.ActualWidth;
-            var imageHeight = DisplayImage.ActualHeight;
+            var imageWidth = DisplayImage.Bounds.Width;
+            var imageHeight = DisplayImage.Bounds.Height;
 
             if (imageWidth <= 0 || imageHeight <= 0) return;
 
-            // Convert to normalized coordinates
             var x = Canvas.GetLeft(_currentRect) / imageWidth;
             var y = Canvas.GetTop(_currentRect) / imageHeight;
             var width = _currentRect.Width / imageWidth;
             var height = _currentRect.Height / imageHeight;
 
-            // Only add if meaningful size
             if (width > 0.01 && height > 0.01)
             {
                 await _viewModel.AddManualRedaction(x, y, width, height);
@@ -166,11 +171,6 @@ namespace Redact1.Views
             }
 
             _currentRect = null;
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel?.CloseCommand.Execute(null);
         }
     }
 }

@@ -1,16 +1,7 @@
-<UserControl x:Class="Redact1.Views.UsersView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:converters="clr-namespace:Redact1.Converters"
-             mc:Ignorable="d"
+             x:Class="Redact1.Views.UsersView"
              Background="{StaticResource BackgroundBrush}">
-
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-    </UserControl.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -32,7 +23,7 @@
 
             <Button Grid.Column="1"
                     Content="+ Add User"
-                    Style="{StaticResource PrimaryButton}"
+                    Classes="primary"
                     Command="{Binding StartCreateUserCommand}" />
         </Grid>
 
@@ -41,7 +32,7 @@
             <ItemsControl ItemsSource="{Binding Users}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <Border Classes="card" Margin="0,0,0,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -49,9 +40,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel>
-                                    <TextBlock Text="{Binding Name}"
-                                               FontWeight="SemiBold"
-                                               FontSize="16" />
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16" />
                                     <TextBlock Text="{Binding Email}"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                Margin="0,4,0,0" />
@@ -68,13 +57,13 @@
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="Edit"
-                                            Style="{StaticResource SecondaryButton}"
-                                            Command="{Binding DataContext.StartEditUserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Classes="secondary"
+                                            Command="{Binding $parent[UserControl].DataContext.StartEditUserCommand}"
                                             CommandParameter="{Binding}"
                                             Margin="0,0,8,0" />
                                     <Button Content="Delete"
-                                            Style="{StaticResource DangerButton}"
-                                            Command="{Binding DataContext.DeleteUserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Classes="danger"
+                                            Command="{Binding $parent[UserControl].DataContext.DeleteUserCommand}"
                                             CommandParameter="{Binding}" />
                                 </StackPanel>
                             </Grid>
@@ -87,54 +76,36 @@
         <!-- Edit Dialog Overlay -->
         <Border Grid.RowSpan="2"
                 Background="#80000000"
-                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Border Background="{StaticResource SurfaceBrush}"
-                    Style="{StaticResource Card}"
+                IsVisible="{Binding IsEditing}">
+            <Border Classes="card"
                     Width="400"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="User Details"
-                               FontSize="18"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,20" />
+                    <TextBlock Text="User Details" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20" />
 
                     <TextBlock Text="Name" FontWeight="Medium" Margin="0,0,0,8" />
-                    <TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource ModernTextBox}"
-                             Margin="0,0,0,16" />
+                    <TextBox Text="{Binding EditName}" Classes="modern" Margin="0,0,0,16" />
 
                     <TextBlock Text="Email" FontWeight="Medium" Margin="0,0,0,8" />
-                    <TextBox Text="{Binding EditEmail, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource ModernTextBox}"
-                             Margin="0,0,0,16" />
+                    <TextBox Text="{Binding EditEmail}" Classes="modern" Margin="0,0,0,16" />
 
                     <TextBlock Text="Role" FontWeight="Medium" Margin="0,0,0,8" />
-                    <ComboBox SelectedValue="{Binding EditRole}"
-                              SelectedValuePath="Tag"
-                              Style="{StaticResource ModernComboBox}"
-                              Margin="0,0,0,16">
+                    <ComboBox SelectedIndex="0" Margin="0,0,0,16">
                         <ComboBoxItem Content="Clerk" Tag="clerk" />
                         <ComboBoxItem Content="Supervisor" Tag="supervisor" />
                     </ComboBox>
 
-                    <TextBlock Text="Password (leave blank to keep current)"
-                               FontWeight="Medium"
-                               Margin="0,0,0,8" />
-                    <PasswordBox x:Name="EditPasswordBox"
-                                 Style="{StaticResource ModernPasswordBox}"
-                                 PasswordChanged="EditPasswordBox_PasswordChanged"
-                                 Margin="0,0,0,24" />
+                    <TextBlock Text="Password (leave blank to keep current)" FontWeight="Medium" Margin="0,0,0,8" />
+                    <TextBox x:Name="EditPasswordBox" PasswordChar="*" Classes="modern" Margin="0,0,0,24" />
 
                     <!-- Error Message -->
                     <Border Background="#FED7D7"
                             CornerRadius="6"
                             Padding="12"
                             Margin="0,0,0,16"
-                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock Text="{Binding ErrorMessage}"
-                                   Foreground="#C53030"
-                                   TextWrapping="Wrap" />
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#C53030" TextWrapping="Wrap" />
                     </Border>
 
                     <Grid>
@@ -145,14 +116,18 @@
 
                         <Button Grid.Column="0"
                                 Content="Cancel"
-                                Style="{StaticResource SecondaryButton}"
+                                Classes="secondary"
                                 Command="{Binding CancelEditCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
                                 Margin="0,0,8,0" />
 
                         <Button Grid.Column="1"
                                 Content="Save"
-                                Style="{StaticResource PrimaryButton}"
+                                Classes="primary"
                                 Command="{Binding SaveUserCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
                                 Margin="8,0,0,0" />
                     </Grid>
                 </StackPanel>
@@ -162,11 +137,8 @@
         <!-- Loading -->
         <Border Grid.RowSpan="2"
                 Background="#80FFFFFF"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
-            <ProgressBar IsIndeterminate="True"
-                         Width="200"
-                         Height="4"
-                         VerticalAlignment="Center" />
+                IsVisible="{Binding IsLoading}">
+            <ProgressBar IsIndeterminate="True" Width="200" Height="4" VerticalAlignment="Center" />
         </Border>
     </Grid>
 </UserControl>

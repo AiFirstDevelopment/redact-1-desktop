@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Redact1.ViewModels"
+             x:Class="Redact1.Views.EnrollmentView"
+             x:DataType="vm:EnrollmentViewModel">
+
+    <Grid Background="#F0F4F8">
+        <Border Background="White"
+                CornerRadius="12"
+                Padding="48"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="420"
+                BoxShadow="0 4 20 #20000000">
+            <StackPanel Spacing="24">
+                <!-- Header -->
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="Redact-1"
+                               FontSize="36"
+                               FontWeight="Bold"
+                               Foreground="#1E3A5F"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Police Records Redaction System"
+                               FontSize="14"
+                               Foreground="#6B7280"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Connect to Department Section -->
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="Connect to Your Department"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#1E3A5F"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Enter your department code to get started"
+                               FontSize="13"
+                               Foreground="#6B7280"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Department Code Input -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Department Code"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"/>
+                    <TextBox x:Name="DepartmentCodeBox"
+                             Text="{Binding DepartmentCode}"
+                             Watermark="e.g. SPRINGFIELD-PD"
+                             FontSize="14"
+                             Padding="12"
+                             CornerRadius="8"/>
+                    <TextBlock Text="This code was provided by your department's IT administrator"
+                               FontSize="11"
+                               Foreground="#9CA3AF"/>
+                </StackPanel>
+
+                <!-- Error Message -->
+                <Border Background="#FEE2E2"
+                        CornerRadius="8"
+                        Padding="12"
+                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#DC2626"
+                               FontSize="13"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Connect Button -->
+                <Button x:Name="ConnectButton"
+                        Command="{Binding ConnectCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="16"
+                        Background="#1E3A5F"
+                        Foreground="White"
+                        CornerRadius="8"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        IsEnabled="{Binding !IsLoading}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Connect to Department"
+                                   IsVisible="{Binding !IsLoading}"/>
+                        <TextBlock Text="Connecting..."
+                                   IsVisible="{Binding IsLoading}"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Use Demo Button -->
+                <Button Command="{Binding UseDemoCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="16"
+                        Background="White"
+                        Foreground="#1E3A5F"
+                        CornerRadius="8"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        BorderBrush="#1E3A5F"
+                        BorderThickness="2">
+                    <TextBlock Text="Use Demo Department"/>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

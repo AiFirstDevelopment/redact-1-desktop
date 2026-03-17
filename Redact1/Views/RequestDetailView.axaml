@@ -1,0 +1,164 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Redact1.Views.RequestDetailView"
+             Background="{StaticResource SurfaceBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Content="Close"
+                        Classes="icon"
+                        x:Name="CloseButton" />
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Request.RequestNumber}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="16,0,0,0" />
+
+                <Button Grid.Column="2"
+                        Content="Save"
+                        Classes="primary"
+                        Command="{Binding SaveChangesCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel>
+                <!-- Request Info -->
+                <TextBlock Text="Title" FontWeight="Medium" Margin="0,0,0,8" />
+                <TextBox Text="{Binding Title}" Classes="modern" Margin="0,0,0,16" />
+
+                <TextBlock Text="Status" FontWeight="Medium" Margin="0,0,0,8" />
+                <ComboBox SelectedIndex="0" Margin="0,0,0,16">
+                    <ComboBoxItem Content="New" Tag="new" />
+                    <ComboBoxItem Content="In Progress" Tag="in_progress" />
+                    <ComboBoxItem Content="Completed" Tag="completed" />
+                </ComboBox>
+
+                <TextBlock Text="Notes" FontWeight="Medium" Margin="0,0,0,8" />
+                <TextBox Text="{Binding Notes}"
+                         Classes="modern"
+                         AcceptsReturn="True"
+                         Height="100"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,24" />
+
+                <!-- Files Section -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Files" FontSize="16" FontWeight="SemiBold" />
+                    <Button Grid.Column="1"
+                            Content="+ Upload"
+                            Classes="secondary"
+                            Command="{Binding UploadFileCommand}" />
+                </Grid>
+
+                <!-- Files List -->
+                <ItemsControl ItemsSource="{Binding Files}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="list-item" PointerPressed="FileItem_Click">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Filename}" FontWeight="Medium" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding FileSizeDisplay}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                            <TextBlock Text=" - " Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                            <TextBlock Text="{Binding Status}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Content="X"
+                                            Classes="icon"
+                                            Foreground="{StaticResource ErrorBrush}"
+                                            Command="{Binding $parent[UserControl].DataContext.DeleteFileCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Upload Progress -->
+                <ProgressBar IsIndeterminate="True"
+                             Height="4"
+                             Margin="0,8,0,0"
+                             IsVisible="{Binding IsUploading}" />
+
+                <!-- Exports Section -->
+                <TextBlock Text="Exports" FontSize="16" FontWeight="SemiBold" Margin="0,24,0,16" />
+
+                <Button Content="Create Export"
+                        Classes="secondary"
+                        Command="{Binding CreateExportCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,16" />
+
+                <ItemsControl ItemsSource="{Binding Exports}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="list-item">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Filename}" FontWeight="Medium" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding FileCount}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                            <TextBlock Text=" files" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Content="Download"
+                                            Classes="secondary"
+                                            Command="{Binding $parent[UserControl].DataContext.DownloadExportCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Border Grid.RowSpan="2"
+                Background="#80FFFFFF"
+                IsVisible="{Binding IsLoading}">
+            <ProgressBar IsIndeterminate="True" Width="200" Height="4" VerticalAlignment="Center" />
+        </Border>
+    </Grid>
+</UserControl>

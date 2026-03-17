@@ -1,10 +1,13 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Services;
 using Redact1.ViewModels;
+using Redact1.Views;
 using System;
 using System.IO;
 using System.Text.Json;
-using System.Windows;
 
 namespace Redact1
 {
@@ -13,12 +16,21 @@ namespace Redact1
         public static IServiceProvider Services { get; private set; } = null!;
         public static AppSettings Settings { get; private set; } = null!;
 
-        protected override void OnStartup(StartupEventArgs e)
+        public override void Initialize()
         {
-            base.OnStartup(e);
-
+            AvaloniaXamlLoader.Load(this);
             LoadSettings();
             ConfigureServices();
+        }
+
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow();
+            }
+
+            base.OnFrameworkInitializationCompleted();
         }
 
         private void LoadSettings()
@@ -52,6 +64,7 @@ namespace Redact1
             services.AddSingleton<IStorageService, StorageService>();
 
             // ViewModels
+            services.AddTransient<EnrollmentViewModel>();
             services.AddTransient<LoginViewModel>();
             services.AddTransient<MainViewModel>();
             services.AddTransient<RequestsViewModel>();

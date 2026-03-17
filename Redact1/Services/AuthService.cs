@@ -9,6 +9,8 @@ namespace Redact1.Services
 
         public User? CurrentUser { get; private set; }
         public bool IsAuthenticated => CurrentUser != null;
+        public bool IsEnrolled => _storageService.GetAgencyConfig() != null;
+        public AgencyConfig? CurrentAgency => _storageService.GetAgencyConfig();
         public event EventHandler<User?>? AuthStateChanged;
 
         public AuthService(IApiService apiService, IStorageService storageService)
@@ -87,6 +89,32 @@ namespace Redact1.Services
                 // Ignore logout errors
             }
 
+            _storageService.ClearAuthToken();
+            _storageService.ClearUser();
+            _apiService.SetAuthToken(null);
+
+            CurrentUser = null;
+            AuthStateChanged?.Invoke(this, null);
+        }
+
+        public void SetDepartmentCode(string code)
+        {
+            // For demo purposes, create a simple agency config
+            // In production, this would fetch config from a discovery service
+            var config = new AgencyConfig
+            {
+                Code = code,
+                Name = code == "DEMO" ? "Demo Police Department" : $"{code} Police Department",
+                ApiBaseUrl = "https://redact-1-worker.joelstevick.workers.dev",
+                LoginIdentifiers = new List<string> { "email" }
+            };
+
+            _storageService.SetAgencyConfig(config);
+        }
+
+        public void ClearEnrollment()
+        {
+            _storageService.ClearAgencyConfig();
             _storageService.ClearAuthToken();
             _storageService.ClearUser();
             _apiService.SetAuthToken(null);

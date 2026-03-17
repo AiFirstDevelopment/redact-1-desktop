@@ -1,31 +1,39 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Services;
+using System.Windows.Input;
 
 namespace Redact1.ViewModels
 {
-    public partial class LoginViewModel : ViewModelBase
+    public class LoginViewModel : ViewModelBase
     {
         private readonly IAuthService _authService;
-
-        [ObservableProperty]
         private string _email = string.Empty;
-
-        [ObservableProperty]
         private string _password = string.Empty;
 
-        [ObservableProperty]
-        private bool _useEmployeeId;
+        public string Email
+        {
+            get => _email;
+            set => SetProperty(ref _email, value);
+        }
+
+        public string Password
+        {
+            get => _password;
+            set => SetProperty(ref _password, value);
+        }
+
+        public ICommand LoginCommand { get; }
+        public ICommand UseDemoCredentialsCommand { get; }
 
         public event EventHandler? LoginSucceeded;
 
         public LoginViewModel()
         {
             _authService = App.Services.GetRequiredService<IAuthService>();
+            LoginCommand = new AsyncRelayCommand(LoginAsync);
+            UseDemoCredentialsCommand = new RelayCommand(UseDemoCredentials);
         }
 
-        [RelayCommand]
         private async Task LoginAsync()
         {
             if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
@@ -39,7 +47,7 @@ namespace Redact1.ViewModels
 
             try
             {
-                await _authService.LoginAsync(Email, Password, UseEmployeeId);
+                await _authService.LoginAsync(Email, Password, false);
                 LoginSucceeded?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
@@ -52,7 +60,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private void UseDemoCredentials()
         {
             Email = "clerk@pd.local";

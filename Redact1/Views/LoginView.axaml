@@ -1,14 +1,10 @@
-<UserControl x:Class="Redact1.Views.LoginView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
+             x:Class="Redact1.Views.LoginView"
              Background="{StaticResource BackgroundBrush}">
 
     <Grid>
-        <Border Background="{StaticResource SurfaceBrush}"
-                Style="{StaticResource Card}"
+        <Border Classes="card"
                 Width="400"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center">
@@ -28,26 +24,25 @@
                            Margin="0,0,0,32" />
 
                 <!-- Error Message -->
-                <Border x:Name="ErrorBorder"
-                        Background="#FED7D7"
+                <Border Background="#FED7D7"
                         CornerRadius="6"
                         Padding="12"
                         Margin="0,0,0,16"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Collapsed}">
+                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#C53030"
                                TextWrapping="Wrap" />
                 </Border>
 
-                <!-- Email/Employee ID -->
+                <!-- Email -->
                 <TextBlock Text="Email"
                            FontSize="14"
                            FontWeight="Medium"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            Margin="0,0,0,8" />
                 <TextBox x:Name="EmailTextBox"
-                         Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource ModernTextBox}"
+                         Text="{Binding Email}"
+                         Classes="modern"
                          Margin="0,0,0,16" />
 
                 <!-- Password -->
@@ -56,36 +51,33 @@
                            FontWeight="Medium"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            Margin="0,0,0,8" />
-                <PasswordBox x:Name="PasswordBox"
-                             Style="{StaticResource ModernPasswordBox}"
-                             Margin="0,0,0,24"
-                             PasswordChanged="PasswordBox_PasswordChanged" />
+                <TextBox x:Name="PasswordBox"
+                         PasswordChar="*"
+                         Classes="modern"
+                         Margin="0,0,0,24" />
 
                 <!-- Login Button -->
-                <Button Content="Sign In"
-                        Style="{StaticResource PrimaryButton}"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                        Click="LoginButton_Click"
+                <Button x:Name="LoginButton"
+                        Content="Sign In"
+                        Classes="primary"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="{Binding !IsLoading}"
                         Margin="0,0,0,16" />
 
                 <!-- Demo Credentials -->
                 <Button Content="Use Demo Credentials"
-                        Style="{StaticResource SecondaryButton}"
-                        Command="{Binding UseDemoCredentialsCommand}"
-                        Margin="0,0,0,0" />
+                        Classes="secondary"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Command="{Binding UseDemoCredentialsCommand}" />
 
                 <!-- Loading Indicator -->
                 <ProgressBar IsIndeterminate="True"
                              Height="4"
                              Margin="0,16,0,0"
-                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+                             IsVisible="{Binding IsLoading}" />
             </StackPanel>
         </Border>
     </Grid>
-
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <local:InverseBoolConverter x:Key="InverseBoolConverter" xmlns:local="clr-namespace:Redact1.Converters" />
-        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" xmlns:local="clr-namespace:Redact1.Converters" />
-    </UserControl.Resources>
 </UserControl>

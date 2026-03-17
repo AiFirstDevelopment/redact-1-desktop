@@ -1,43 +1,84 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.Models;
 using Redact1.Services;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace Redact1.ViewModels
 {
-    public partial class UsersViewModel : ViewModelBase
+    public class UsersViewModel : ViewModelBase
     {
         private readonly IApiService _apiService;
 
-        [ObservableProperty]
         private ObservableCollection<User> _users = new();
-
-        [ObservableProperty]
         private User? _selectedUser;
-
-        [ObservableProperty]
         private bool _isEditing;
-
-        [ObservableProperty]
         private string _editName = string.Empty;
-
-        [ObservableProperty]
         private string _editEmail = string.Empty;
-
-        [ObservableProperty]
         private string _editRole = "clerk";
-
-        [ObservableProperty]
         private string _editPassword = string.Empty;
+
+        public ObservableCollection<User> Users
+        {
+            get => _users;
+            set => SetProperty(ref _users, value);
+        }
+
+        public User? SelectedUser
+        {
+            get => _selectedUser;
+            set => SetProperty(ref _selectedUser, value);
+        }
+
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set => SetProperty(ref _isEditing, value);
+        }
+
+        public string EditName
+        {
+            get => _editName;
+            set => SetProperty(ref _editName, value);
+        }
+
+        public string EditEmail
+        {
+            get => _editEmail;
+            set => SetProperty(ref _editEmail, value);
+        }
+
+        public string EditRole
+        {
+            get => _editRole;
+            set => SetProperty(ref _editRole, value);
+        }
+
+        public string EditPassword
+        {
+            get => _editPassword;
+            set => SetProperty(ref _editPassword, value);
+        }
+
+        public ICommand LoadUsersCommand { get; }
+        public ICommand StartCreateUserCommand { get; }
+        public ICommand StartEditUserCommand { get; }
+        public ICommand SaveUserCommand { get; }
+        public ICommand CancelEditCommand { get; }
+        public ICommand DeleteUserCommand { get; }
 
         public UsersViewModel()
         {
             _apiService = App.Services.GetRequiredService<IApiService>();
+
+            LoadUsersCommand = new AsyncRelayCommand(LoadUsersAsync);
+            StartCreateUserCommand = new RelayCommand(StartCreateUser);
+            StartEditUserCommand = new RelayCommand<User>(StartEditUser);
+            SaveUserCommand = new AsyncRelayCommand(SaveUserAsync);
+            CancelEditCommand = new RelayCommand(CancelEdit);
+            DeleteUserCommand = new AsyncRelayCommand<User>(DeleteUserAsync);
         }
 
-        [RelayCommand]
         public async Task LoadUsersAsync()
         {
             IsLoading = true;
@@ -62,7 +103,6 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private void StartCreateUser()
         {
             SelectedUser = null;
@@ -73,9 +113,9 @@ namespace Redact1.ViewModels
             IsEditing = true;
         }
 
-        [RelayCommand]
-        private void StartEditUser(User user)
+        private void StartEditUser(User? user)
         {
+            if (user == null) return;
             SelectedUser = user;
             EditName = user.Name;
             EditEmail = user.Email;
@@ -84,7 +124,6 @@ namespace Redact1.ViewModels
             IsEditing = true;
         }
 
-        [RelayCommand]
         private async Task SaveUserAsync()
         {
             if (string.IsNullOrWhiteSpace(EditName) || string.IsNullOrWhiteSpace(EditEmail))
@@ -99,7 +138,6 @@ namespace Redact1.ViewModels
             {
                 if (SelectedUser == null)
                 {
-                    // Create new user
                     if (string.IsNullOrWhiteSpace(EditPassword))
                     {
                         SetError("Password is required for new users");
@@ -119,7 +157,6 @@ namespace Redact1.ViewModels
                 }
                 else
                 {
-                    // Update existing user
                     var request = new UpdateUserRequest
                     {
                         Name = EditName,
@@ -152,16 +189,16 @@ namespace Redact1.ViewModels
             }
         }
 
-        [RelayCommand]
         private void CancelEdit()
         {
             IsEditing = false;
             SelectedUser = null;
         }
 
-        [RelayCommand]
-        private async Task DeleteUserAsync(User user)
+        private async Task DeleteUserAsync(User? user)
         {
+            if (user == null) return;
+
             try
             {
                 await _apiService.DeleteUserAsync(user.Id);

@@ -1,25 +1,26 @@
-<Window x:Class="Redact1.Views.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:Redact1.Views"
-        mc:Ignorable="d"
+        x:Class="Redact1.Views.MainWindow"
         Title="Redact-1"
-        Height="800"
         Width="1200"
-        MinHeight="600"
+        Height="800"
         MinWidth="900"
+        MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}">
 
     <Grid>
+        <!-- Enrollment View -->
+        <views:EnrollmentView x:Name="EnrollmentView"
+                              IsVisible="False" />
+
         <!-- Login View -->
         <views:LoginView x:Name="LoginView"
-                         Visibility="Collapsed" />
+                         IsVisible="False" />
 
         <!-- Main Content -->
-        <Grid x:Name="MainContent" Visibility="Collapsed">
+        <Grid x:Name="MainContent" IsVisible="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -52,11 +53,10 @@
                                    Margin="0,0,16,0" />
                         <Button x:Name="LogoutButton"
                                 Content="Sign Out"
-                                Style="{StaticResource SecondaryButton}"
+                                Classes="secondary"
                                 Background="Transparent"
                                 Foreground="White"
-                                BorderBrush="White"
-                                Click="LogoutButton_Click" />
+                                BorderBrush="White" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -65,12 +65,7 @@
             <TabControl x:Name="MainTabControl"
                         Grid.Row="1"
                         Background="Transparent"
-                        BorderThickness="0"
                         Padding="0">
-                <TabControl.Resources>
-                    <Style TargetType="TabItem" BasedOn="{StaticResource ModernTabItem}" />
-                </TabControl.Resources>
-
                 <TabItem Header="Requests">
                     <views:RequestsView x:Name="RequestsView" />
                 </TabItem>
@@ -89,21 +84,21 @@
             </TabControl>
         </Grid>
 
-        <!-- Request Detail Panel (slides in from right) -->
+        <!-- Request Detail Panel -->
         <Border x:Name="DetailPanel"
                 Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="1,0,0,0"
                 HorizontalAlignment="Right"
                 Width="500"
-                Visibility="Collapsed">
+                IsVisible="False">
             <views:RequestDetailView x:Name="RequestDetailView" />
         </Border>
 
         <!-- File Review (full screen overlay) -->
         <Border x:Name="FileReviewPanel"
                 Background="{StaticResource SurfaceBrush}"
-                Visibility="Collapsed">
+                IsVisible="False">
             <views:FileReviewView x:Name="FileReviewView" />
         </Border>
     </Grid>

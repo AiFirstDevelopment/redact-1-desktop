@@ -1,7 +1,6 @@
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Redact1.ViewModels;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace Redact1.Views
 {
@@ -12,6 +11,14 @@ namespace Redact1.Views
         public UsersView()
         {
             InitializeComponent();
+
+            EditPasswordBox.PropertyChanged += (s, e) =>
+            {
+                if (e.Property.Name == "Text" && _viewModel != null)
+                {
+                    _viewModel.EditPassword = EditPasswordBox.Text ?? string.Empty;
+                }
+            };
         }
 
         public void Initialize()
@@ -19,14 +26,6 @@ namespace Redact1.Views
             _viewModel = App.Services.GetRequiredService<UsersViewModel>();
             DataContext = _viewModel;
             _ = _viewModel.LoadUsersAsync();
-        }
-
-        private void EditPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
-        {
-            if (_viewModel != null)
-            {
-                _viewModel.EditPassword = EditPasswordBox.Password;
-            }
         }
     }
 }

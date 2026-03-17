@@ -1,9 +1,6 @@
-<UserControl x:Class="Redact1.Views.SettingsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
+             x:Class="Redact1.Views.SettingsView"
              Background="{StaticResource BackgroundBrush}">
 
     <Grid Margin="20">
@@ -24,12 +21,9 @@
         <ScrollViewer Grid.Row="1">
             <StackPanel>
                 <!-- Profile Section -->
-                <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                <Border Classes="card" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Profile"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,16" />
+                        <TextBlock Text="Profile" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -69,51 +63,40 @@
                 </Border>
 
                 <!-- Account Actions -->
-                <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                <Border Classes="card" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Account"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,16" />
+                        <TextBlock Text="Account" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
 
                         <Button Content="Sign Out"
-                                Style="{StaticResource DangerButton}"
+                                Classes="danger"
                                 Command="{Binding LogoutCommand}"
                                 HorizontalAlignment="Left" />
                     </StackPanel>
                 </Border>
 
                 <!-- Support Section -->
-                <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                <Border Classes="card" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Support"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,16" />
+                        <TextBlock Text="Support" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
 
                         <Button Content="Contact Support"
-                                Style="{StaticResource SecondaryButton}"
+                                Classes="secondary"
                                 Command="{Binding OpenSupportCommand}"
                                 HorizontalAlignment="Left" />
                     </StackPanel>
                 </Border>
 
                 <!-- About Section -->
-                <Border Style="{StaticResource Card}">
+                <Border Classes="card">
                     <StackPanel>
-                        <TextBlock Text="About"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,16" />
+                        <TextBlock Text="About" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Text="Version:"
-                                       FontWeight="Medium"
-                                       Margin="0,0,8,0" />
+                            <TextBlock Text="Version:" FontWeight="Medium" Margin="0,0,8,0" />
                             <TextBlock Text="{Binding AppVersion}" />
                         </StackPanel>
 
-                        <TextBlock Text="Redact-1 for Windows"
+                        <TextBlock Text="Redact-1 for Desktop"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    Margin="0,0,0,8" />
 

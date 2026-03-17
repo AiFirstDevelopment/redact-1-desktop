@@ -28,11 +28,22 @@ namespace Redact1.Views
 
         private async void UploadButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (_viewModel?.Request == null) return;
+            Console.WriteLine("[Upload] Button clicked");
+
+            if (_viewModel?.Request == null)
+            {
+                Console.WriteLine("[Upload] No request loaded");
+                return;
+            }
 
             var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null) return;
+            if (topLevel == null)
+            {
+                Console.WriteLine("[Upload] No top level window");
+                return;
+            }
 
+            Console.WriteLine("[Upload] Opening file picker...");
             var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = "Select files to upload",
@@ -44,6 +55,7 @@ namespace Redact1.Views
                 }
             });
 
+            Console.WriteLine($"[Upload] Selected {files.Count} files");
             if (files.Count == 0) return;
 
             _viewModel.IsUploading = true;
@@ -54,18 +66,19 @@ namespace Redact1.Views
 
                 foreach (var file in files)
                 {
-                    // Get the local file path
                     var localPath = file.TryGetLocalPath();
+                    Console.WriteLine($"[Upload] Uploading: {localPath}");
                     if (localPath != null)
                     {
                         var uploaded = await apiService.UploadFileAsync(_viewModel.Request.Id, localPath);
+                        Console.WriteLine($"[Upload] Success: {uploaded.Filename}");
                         _viewModel.Files.Add(uploaded);
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Error handling - could show a dialog
+                Console.WriteLine($"[Upload] Error: {ex.Message}");
             }
             finally
             {
@@ -75,6 +88,7 @@ namespace Redact1.Views
 
         public async void LoadRequest(string requestId)
         {
+            Console.WriteLine($"[Detail] LoadRequest called: {requestId}");
             _viewModel = App.Services.GetRequiredService<RequestDetailViewModel>();
             _viewModel.FileSelected += (s, f) => FileSelected?.Invoke(this, f);
             _viewModel.RequestClosed += (s, e) => RequestClosed?.Invoke(this, e);
@@ -84,6 +98,7 @@ namespace Redact1.Views
             DataContext = _viewModel;
 
             await _viewModel.LoadRequestAsync(requestId);
+            Console.WriteLine($"[Detail] Request loaded: {_viewModel.Request?.Id ?? "NULL"}");
         }
 
         private void FileItem_Click(object? sender, PointerPressedEventArgs e)

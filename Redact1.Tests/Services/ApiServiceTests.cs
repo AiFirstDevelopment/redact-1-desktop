@@ -140,8 +140,11 @@ public class ApiServiceTests
     [Fact]
     public async Task CreateRequestAsync_ReturnsCreatedRequest()
     {
-        var expectedRequest = new RecordsRequest { Id = "new-req", Title = "New Request" };
-        SetupResponse(expectedRequest);
+        var response = new RequestResponse
+        {
+            Request = new RecordsRequest { Id = "new-req", Title = "New Request" }
+        };
+        SetupResponse(response);
 
         var result = await _apiService.CreateRequestAsync(new CreateRequestPayload
         {
@@ -210,8 +213,11 @@ public class ApiServiceTests
     [Fact]
     public async Task UpdateRequestAsync_ReturnsUpdatedRequest()
     {
-        var updatedRequest = new RecordsRequest { Id = "req-1", Title = "Updated Title" };
-        SetupResponse(updatedRequest);
+        var response = new RequestResponse
+        {
+            Request = new RecordsRequest { Id = "req-1", Title = "Updated Title" }
+        };
+        SetupResponse(response);
 
         var result = await _apiService.UpdateRequestAsync("req-1", new UpdateRequestPayload
         {
@@ -310,8 +316,11 @@ public class ApiServiceTests
     [Fact]
     public async Task ArchiveRequestAsync_ReturnsArchivedRequest()
     {
-        var archivedRequest = new RecordsRequest { Id = "req-1", Status = "archived" };
-        SetupResponse(archivedRequest);
+        var response = new RequestResponse
+        {
+            Request = new RecordsRequest { Id = "req-1", Status = "archived" }
+        };
+        SetupResponse(response);
 
         var result = await _apiService.ArchiveRequestAsync("req-1");
 

@@ -120,6 +120,7 @@ namespace Redact1.Views
 
         private void OnRequestSelected(object? sender, RecordsRequest request)
         {
+            Console.WriteLine($"[Main] Request selected: Id={request.Id}, Title={request.Title}");
             DetailPanel.IsVisible = true;
             RequestDetailView.LoadRequest(request.Id);
             RequestDetailView.FileSelected += OnFileSelected;

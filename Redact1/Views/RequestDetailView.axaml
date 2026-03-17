@@ -166,7 +166,7 @@
                              Margin="0,8,0,0"
                              IsVisible="{Binding IsUploading}" />
 
-                <!-- Exports Section -->
+                <!-- Export Section -->
                 <Border Background="#E5F0E9" CornerRadius="10" Padding="16" Margin="0,8,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -174,14 +174,11 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Border Background="{StaticResource SuccessBrush}" CornerRadius="6" Padding="8,4">
-                                <TextBlock Text="EXPORTS" FontSize="11" FontWeight="Bold" Foreground="White" />
-                            </Border>
-                            <TextBlock Text="{Binding Exports.Count}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                        </StackPanel>
+                        <Border Background="{StaticResource SuccessBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                            <TextBlock Text="EXPORT" FontSize="11" FontWeight="Bold" Foreground="White" />
+                        </Border>
                         <Button Grid.Column="1"
-                                Content="Create Export"
+                                Content="Export"
                                 Background="{StaticResource SuccessBrush}"
                                 Foreground="White"
                                 FontWeight="SemiBold"

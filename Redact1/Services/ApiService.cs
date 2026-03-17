@@ -145,7 +145,8 @@ namespace Redact1.Services
 
         public async Task<RecordsRequest> CreateRequestAsync(CreateRequestPayload request)
         {
-            return await PostAsync<RecordsRequest>("/requests", request);
+            var response = await PostAsync<RequestResponse>("/requests", request);
+            return response.Request;
         }
 
         public async Task<RecordsRequest> GetRequestAsync(string id)
@@ -156,7 +157,8 @@ namespace Redact1.Services
 
         public async Task<RecordsRequest> UpdateRequestAsync(string id, UpdateRequestPayload request)
         {
-            return await PutAsync<RecordsRequest>($"/requests/{id}", request);
+            var response = await PutAsync<RequestResponse>($"/requests/{id}", request);
+            return response.Request;
         }
 
         public async Task DeleteRequestAsync(string id)
@@ -166,7 +168,8 @@ namespace Redact1.Services
 
         public async Task<RecordsRequest> ArchiveRequestAsync(string id)
         {
-            return await PostAsync<RecordsRequest>($"/requests/{id}/archive");
+            var response = await PostAsync<RequestResponse>($"/requests/{id}/archive");
+            return response.Request;
         }
 
         public async Task<RecordsRequest> UnarchiveRequestAsync(string id)

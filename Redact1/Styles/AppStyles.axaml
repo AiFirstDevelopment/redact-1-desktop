@@ -4,10 +4,10 @@
     <!-- Modern Color Palette - Warm brick with soft pastels -->
     <Style>
         <Style.Resources>
-            <!-- Primary - Muted brick/terracotta -->
-            <Color x:Key="PrimaryColor">#B07D62</Color>
-            <Color x:Key="PrimaryLightColor">#C99A82</Color>
-            <Color x:Key="PrimaryDarkColor">#8B5E47</Color>
+            <!-- Primary - Red brick -->
+            <Color x:Key="PrimaryColor">#B54B4B</Color>
+            <Color x:Key="PrimaryLightColor">#C96666</Color>
+            <Color x:Key="PrimaryDarkColor">#943D3D</Color>
 
             <!-- Accent - Soft dusty rose -->
             <Color x:Key="AccentColor">#C9A9A6</Color>

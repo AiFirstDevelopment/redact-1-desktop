@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using OpenCvSharp;
 
 namespace Redact1.Services
 {
@@ -18,6 +19,7 @@ namespace Redact1.Services
         private static readonly Regex LicensePlatePattern = new(@"\b[A-Z]{2,4}\d{2,5}\b|\b\d{1,3}[A-Z]{2,4}\d{1,4}\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private readonly string? _tesseractPath;
+        private readonly string? _faceCascadePath;
 
         public DetectionService()
         {
@@ -59,6 +61,24 @@ namespace Redact1.Services
             }
 
             Console.WriteLine($"[Detection] Tesseract path: {_tesseractPath ?? "NOT FOUND"}");
+
+            // Look for face cascade file
+            var cascadePaths = new[]
+            {
+                // App directory
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "haarcascade_frontalface_default.xml"),
+                // macOS Homebrew OpenCV
+                "/opt/homebrew/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+                "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+                // Linux
+                "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+                "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml",
+                // Windows
+                @"C:\opencv\data\haarcascades\haarcascade_frontalface_default.xml",
+            };
+
+            _faceCascadePath = cascadePaths.FirstOrDefault(File.Exists);
+            Console.WriteLine($"[Detection] Face cascade path: {_faceCascadePath ?? "NOT FOUND"}");
         }
 
         public async Task<List<CreateDetectionRequest>> DetectInImageAsync(byte[] imageData)
@@ -67,6 +87,10 @@ namespace Redact1.Services
             await File.WriteAllTextAsync("/tmp/detection_started.txt", $"Detection started at {DateTime.Now}");
 
             var detections = new List<CreateDetectionRequest>();
+
+            // Try face detection first
+            var faces = await DetectFacesAsync(imageData);
+            detections.AddRange(faces);
 
             if (_tesseractPath == null)
             {
@@ -423,6 +447,95 @@ namespace Redact1.Services
                     TextEnd = match.Index + match.Length,
                     Confidence = 0.90
                 });
+            }
+
+            return detections;
+        }
+
+        /// <summary>
+        /// Detect faces in image using OpenCV Haar cascade
+        /// </summary>
+        private async Task<List<CreateDetectionRequest>> DetectFacesAsync(byte[] imageData)
+        {
+            var detections = new List<CreateDetectionRequest>();
+
+            if (_faceCascadePath == null)
+            {
+                Console.WriteLine("[Detection] Face cascade not found, skipping face detection");
+                return detections;
+            }
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    // Save image to temp file for OpenCV
+                    var tempPath = Path.Combine(Path.GetTempPath(), $"opencv_input_{Guid.NewGuid()}.png");
+                    try
+                    {
+                        File.WriteAllBytes(tempPath, imageData);
+
+                        using var mat = Cv2.ImRead(tempPath, ImreadModes.Color);
+                        if (mat.Empty())
+                        {
+                            Console.WriteLine("[Detection] Failed to load image for face detection");
+                            return;
+                        }
+
+                        var imageWidth = mat.Width;
+                        var imageHeight = mat.Height;
+
+                        using var grayMat = new Mat();
+                        Cv2.CvtColor(mat, grayMat, ColorConversionCodes.BGR2GRAY);
+                        Cv2.EqualizeHist(grayMat, grayMat);
+
+                        using var faceCascade = new CascadeClassifier(_faceCascadePath);
+                        var faces = faceCascade.DetectMultiScale(
+                            grayMat,
+                            scaleFactor: 1.1,
+                            minNeighbors: 5,
+                            flags: HaarDetectionTypes.ScaleImage,
+                            minSize: new OpenCvSharp.Size(30, 30)
+                        );
+
+                        Console.WriteLine($"[Detection] Found {faces.Length} faces");
+
+                        foreach (var face in faces)
+                        {
+                            // Convert to normalized coordinates (0-1)
+                            var x = (double)face.X / imageWidth;
+                            var y = (double)face.Y / imageHeight;
+                            var width = (double)face.Width / imageWidth;
+                            var height = (double)face.Height / imageHeight;
+
+                            // Y flip for PDF coordinates
+                            var flippedY = 1.0 - y - height;
+
+                            lock (detections)
+                            {
+                                detections.Add(new CreateDetectionRequest
+                                {
+                                    DetectionType = "face",
+                                    TextContent = "Face detected",
+                                    BboxX = x,
+                                    BboxY = flippedY,
+                                    BboxWidth = width,
+                                    BboxHeight = height,
+                                    Confidence = 0.85
+                                });
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        try { File.Delete(tempPath); } catch { }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Detection] Face detection error: {ex.Message}");
+                Console.WriteLine($"[Detection] Stack: {ex.StackTrace}");
             }
 
             return detections;

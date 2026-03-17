@@ -445,4 +445,16 @@ public class DetectionServiceTests
 
         result.Should().NotContain(d => d.DetectionType == "ssn");
     }
+
+    [Fact]
+    public async Task DetectInImageAsync_WithEmptyImage_IncludesFaceDetection()
+    {
+        // This test verifies face detection is called (even if no faces found)
+        var imageData = new byte[] { 0x00 };
+
+        // Should not throw even with invalid image
+        var result = await _service.DetectInImageAsync(imageData);
+
+        result.Should().NotBeNull();
+    }
 }

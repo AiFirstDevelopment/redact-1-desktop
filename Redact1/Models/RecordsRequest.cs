@@ -38,6 +38,15 @@ namespace Redact1.Models
 
         public DateTime RequestDateTime => DateTimeOffset.FromUnixTimeMilliseconds(RequestDate).LocalDateTime;
         public DateTime CreatedDateTime => DateTimeOffset.FromUnixTimeMilliseconds(CreatedAt).LocalDateTime;
+
+        public string StatusDisplay => Status switch
+        {
+            "new" => "New",
+            "in_progress" => "In Progress",
+            "completed" => "Completed",
+            "archived" => "Archived",
+            _ => Status
+        };
     }
 
     public enum RequestStatus
@@ -78,5 +87,11 @@ namespace Redact1.Models
     {
         [JsonPropertyName("requests")]
         public List<RecordsRequest> Requests { get; set; } = new();
+    }
+
+    public class RequestResponse
+    {
+        [JsonPropertyName("request")]
+        public RecordsRequest Request { get; set; } = new();
     }
 }

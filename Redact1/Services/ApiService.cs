@@ -144,7 +144,8 @@ namespace Redact1.Services
 
         public async Task<RecordsRequest> GetRequestAsync(string id)
         {
-            return await GetAsync<RecordsRequest>($"/requests/{id}");
+            var response = await GetAsync<RequestResponse>($"/requests/{id}");
+            return response.Request;
         }
 
         public async Task<RecordsRequest> UpdateRequestAsync(string id, UpdateRequestPayload request)
@@ -175,7 +176,8 @@ namespace Redact1.Services
         // Files
         public async Task<List<EvidenceFile>> GetFilesAsync(string requestId)
         {
-            return await GetAsync<List<EvidenceFile>>($"/requests/{requestId}/files");
+            var response = await GetAsync<FilesListResponse>($"/requests/{requestId}/files");
+            return response.Files;
         }
 
         public async Task<EvidenceFile> UploadFileAsync(string requestId, string filePath)

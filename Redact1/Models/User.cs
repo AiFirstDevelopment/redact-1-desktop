@@ -25,7 +25,15 @@ namespace Redact1.Models
         [JsonPropertyName("updated_at")]
         public long UpdatedAt { get; set; }
 
-        public bool IsSupervisor => Role == "supervisor";
+        public bool IsSupervisor => Role == "supervisor" || Role == "admin";
+
+        public string RoleDisplay => Role switch
+        {
+            "clerk" => "Clerk",
+            "supervisor" => "Supervisor",
+            "admin" => "Administrator",
+            _ => Role
+        };
     }
 
     public class LoginRequest

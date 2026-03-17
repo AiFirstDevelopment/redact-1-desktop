@@ -71,4 +71,10 @@ namespace Redact1.Models
         [JsonPropertyName("file")]
         public EvidenceFile File { get; set; } = new();
     }
+
+    public class FilesListResponse
+    {
+        [JsonPropertyName("files")]
+        public List<EvidenceFile> Files { get; set; } = new();
+    }
 }

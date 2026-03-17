@@ -1,16 +1,44 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Redact1.Views.FileReviewView"
-             Background="#1A1A1A">
+             Background="#18181F">
 
     <UserControl.Styles>
-        <!-- Toolbar button hover style - keeps text readable -->
+        <!-- Toolbar button styles -->
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Background" Value="#FFFFFF20" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
         <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#40FFFFFF" />
+            <Setter Property="Background" Value="#FFFFFF40" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.toolbar-btn:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#60FFFFFF" />
+            <Setter Property="Background" Value="#FFFFFF60" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Success button on toolbar -->
+        <Style Selector="Button.toolbar-success">
+            <Setter Property="Background" Value="#10B981" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.toolbar-success:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#059669" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.toolbar-success:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#047857" />
             <Setter Property="Foreground" Value="White" />
         </Style>
     </UserControl.Styles>
@@ -25,7 +53,8 @@
         <!-- Toolbar -->
         <Border Grid.Row="0"
                 Background="{StaticResource PrimaryBrush}"
-                Padding="16,12">
+                Padding="20,14"
+                CornerRadius="0,0,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -35,39 +64,28 @@
 
                 <Button Grid.Column="0"
                         Content="Close"
-                        Classes="secondary toolbar-btn"
-                        Background="Transparent"
-                        Foreground="White"
-                        BorderBrush="White"
+                        Classes="toolbar-btn"
                         x:Name="CloseButton" />
 
                 <TextBlock Grid.Column="1"
                            Text="{Binding File.Filename}"
                            Foreground="White"
                            FontWeight="SemiBold"
+                           FontSize="15"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
                     <Button Content="Run Detection"
-                            Classes="secondary toolbar-btn"
-                            Background="Transparent"
-                            Foreground="White"
-                            BorderBrush="White"
-                            Command="{Binding RunDetectionCommand}"
-                            Margin="0,0,8,0" />
+                            Classes="toolbar-btn"
+                            Command="{Binding RunDetectionCommand}" />
 
                     <Button Content="Draw Redaction"
-                            Classes="secondary toolbar-btn"
-                            Background="Transparent"
-                            Foreground="White"
-                            BorderBrush="White"
-                            Command="{Binding ToggleDrawingModeCommand}"
-                            Margin="0,0,8,0" />
+                            Classes="toolbar-btn"
+                            Command="{Binding ToggleDrawingModeCommand}" />
 
                     <Button Content="Save Redacted"
-                            Classes="primary"
-                            Background="{StaticResource SuccessBrush}"
+                            Classes="toolbar-success"
                             Command="{Binding SaveRedactedCommand}" />
                 </StackPanel>
             </Grid>
@@ -77,7 +95,7 @@
         <ScrollViewer Grid.Row="1"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
-                      Background="#1A1A1A">
+                      Background="#18181F">
             <Grid x:Name="ImageContainer">
                 <Image x:Name="DisplayImage"
                        Source="{Binding DisplayImage}"
@@ -98,45 +116,53 @@
         <!-- PDF Navigation -->
         <Border Grid.Row="2"
                 Background="{StaticResource SurfaceBrush}"
-                Padding="16"
+                Padding="20,14"
                 IsVisible="{Binding File.IsPdf}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
                 <Button Content="Previous"
                         Classes="secondary"
-                        Command="{Binding PreviousPageCommand}"
-                        Margin="0,0,16,0" />
+                        Command="{Binding PreviousPageCommand}" />
 
-                <TextBlock VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{StaticResource TextSecondaryBrush}">
                     <Run Text="Page " />
-                    <Run Text="{Binding CurrentPage}" />
+                    <Run Text="{Binding CurrentPage}" FontWeight="SemiBold" />
                     <Run Text=" of " />
-                    <Run Text="{Binding TotalPages}" />
+                    <Run Text="{Binding TotalPages}" FontWeight="SemiBold" />
                 </TextBlock>
 
                 <Button Content="Next"
                         Classes="secondary"
-                        Command="{Binding NextPageCommand}"
-                        Margin="16,0,0,0" />
+                        Command="{Binding NextPageCommand}" />
             </StackPanel>
         </Border>
 
         <!-- Loading Overlay -->
         <Border Grid.RowSpan="3"
-                Background="#80000000"
+                Background="#C018181F"
                 IsVisible="{Binding IsLoading}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" Width="150" Height="4" />
-                <TextBlock Text="Processing..." Foreground="White" Margin="0,12,0,0" HorizontalAlignment="Center" />
+                <ProgressBar IsIndeterminate="True" Width="180" Height="4" Foreground="{StaticResource PrimaryBrush}" />
+                <TextBlock Text="Processing..."
+                           Foreground="White"
+                           FontSize="14"
+                           Margin="0,16,0,0"
+                           HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
 
         <!-- Detecting Overlay -->
         <Border Grid.RowSpan="3"
-                Background="#80000000"
+                Background="#C018181F"
                 IsVisible="{Binding IsDetecting}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" Width="150" Height="4" />
-                <TextBlock Text="Detecting sensitive content..." Foreground="White" Margin="0,12,0,0" HorizontalAlignment="Center" />
+                <ProgressBar IsIndeterminate="True" Width="180" Height="4" Foreground="{StaticResource PrimaryBrush}" />
+                <TextBlock Text="Detecting sensitive content..."
+                           Foreground="White"
+                           FontSize="14"
+                           Margin="0,16,0,0"
+                           HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
     </Grid>

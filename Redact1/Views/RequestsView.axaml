@@ -3,7 +3,7 @@
              x:Class="Redact1.Views.RequestsView"
              Background="{StaticResource BackgroundBrush}">
 
-    <Grid Margin="20">
+    <Grid Margin="28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -19,7 +19,7 @@
 
             <TextBlock x:Name="TitleText"
                        Text="Records Requests"
-                       FontSize="24"
+                       FontSize="28"
                        FontWeight="Bold"
                        Foreground="{StaticResource TextPrimaryBrush}" />
 
@@ -30,7 +30,7 @@
         </Grid>
 
         <!-- Search and Filter -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
+        <Grid Grid.Row="1" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -45,7 +45,9 @@
             <ComboBox x:Name="StatusFilter"
                       Grid.Column="1"
                       SelectedIndex="0"
-                      Width="150">
+                      Width="160"
+                      CornerRadius="10"
+                      Padding="14,10">
                 <ComboBoxItem Content="All Status" Tag="all" />
                 <ComboBoxItem Content="New" Tag="new" />
                 <ComboBoxItem Content="In Progress" Tag="in_progress" />
@@ -56,8 +58,8 @@
         <!-- Error Message -->
         <Border Grid.Row="2"
                 Background="#FEE2E2"
-                CornerRadius="8"
-                Padding="12"
+                CornerRadius="10"
+                Padding="14"
                 Margin="0,0,0,12"
                 VerticalAlignment="Top"
                 IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
@@ -70,18 +72,20 @@
         <!-- Loading -->
         <ProgressBar Grid.Row="2"
                      IsIndeterminate="True"
-                     Height="4"
+                     Height="3"
                      VerticalAlignment="Top"
                      Margin="0,50,0,0"
+                     Foreground="{StaticResource PrimaryBrush}"
                      IsVisible="{Binding IsLoading}" />
 
         <!-- Requests List -->
-        <ScrollViewer Grid.Row="2" Margin="0,20,0,0">
+        <ScrollViewer Grid.Row="2" Margin="0,24,0,0">
             <ItemsControl ItemsSource="{Binding Requests}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Classes="card"
-                                Margin="0,0,0,12"
+                                Margin="0,0,0,14"
+                                Padding="20"
                                 Cursor="Hand"
                                 PointerPressed="RequestItem_Click">
                             <Grid>
@@ -94,31 +98,33 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal">
+                                <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="12">
                                     <TextBlock Text="{Binding RequestNumber}"
                                                FontWeight="SemiBold"
                                                FontSize="16"
                                                Foreground="{StaticResource TextPrimaryBrush}" />
 
-                                    <Border Margin="12,0,0,0"
-                                            Padding="8,4"
-                                            CornerRadius="4"
-                                            Background="#EBF8FF">
+                                    <Border Padding="10,5"
+                                            CornerRadius="6"
+                                            Background="#EDE9FE">
                                         <TextBlock Text="{Binding StatusDisplay}"
                                                    FontSize="12"
-                                                   Foreground="#3182CE" />
+                                                   FontWeight="Medium"
+                                                   Foreground="{StaticResource PrimaryBrush}" />
                                     </Border>
                                 </StackPanel>
 
                                 <TextBlock Grid.Column="1" Grid.Row="0"
                                            Text="{Binding RequestDateTime}"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="13"
                                            VerticalAlignment="Center" />
 
                                 <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"
                                            Text="{Binding Title}"
                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                           Margin="0,8,0,0"
+                                           FontSize="14"
+                                           Margin="0,10,0,0"
                                            TextTrimming="CharacterEllipsis" />
                             </Grid>
                         </Border>
@@ -133,12 +139,13 @@
                     HorizontalAlignment="Center"
                     IsVisible="{Binding !Requests.Count}">
             <TextBlock Text="No requests found"
-                       FontSize="18"
+                       FontSize="20"
+                       FontWeight="SemiBold"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        HorizontalAlignment="Center" />
             <TextBlock Text="Create a new request to get started"
                        FontSize="14"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{StaticResource TextMutedBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,8,0,0" />
         </StackPanel>

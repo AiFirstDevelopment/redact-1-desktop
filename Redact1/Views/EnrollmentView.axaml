@@ -2,64 +2,61 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Redact1.ViewModels"
              x:Class="Redact1.Views.EnrollmentView"
-             x:DataType="vm:EnrollmentViewModel">
+             x:DataType="vm:EnrollmentViewModel"
+             Background="{StaticResource BackgroundBrush}">
 
-    <Grid Background="#F0F4F8">
-        <Border Background="White"
-                CornerRadius="12"
-                Padding="48"
+    <Grid>
+        <Border Classes="card"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                MinWidth="420"
-                BoxShadow="0 4 20 #20000000">
+                MinWidth="440"
+                Padding="40">
             <StackPanel Spacing="24">
                 <!-- Header -->
-                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
                     <TextBlock Text="Redact-1"
-                               FontSize="36"
+                               FontSize="38"
                                FontWeight="Bold"
-                               Foreground="#1E3A5F"
+                               Foreground="{StaticResource PrimaryBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Police Records Redaction System"
                                FontSize="14"
-                               Foreground="#6B7280"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Connect to Department Section -->
-                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <StackPanel Spacing="6" HorizontalAlignment="Center" Margin="0,8,0,0">
                     <TextBlock Text="Connect to Your Department"
                                FontSize="18"
                                FontWeight="SemiBold"
-                               Foreground="#1E3A5F"
+                               Foreground="{StaticResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Enter your department code to get started"
                                FontSize="13"
-                               Foreground="#6B7280"
+                               Foreground="{StaticResource TextSecondaryBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Department Code Input -->
                 <StackPanel Spacing="8">
                     <TextBlock Text="Department Code"
-                               FontSize="14"
+                               FontSize="13"
                                FontWeight="SemiBold"
-                               Foreground="#374151"/>
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
                     <TextBox x:Name="DepartmentCodeBox"
                              Text="{Binding DepartmentCode}"
                              Watermark="e.g. SPRINGFIELD-PD"
-                             FontSize="14"
-                             Padding="12"
-                             CornerRadius="8"/>
+                             Classes="modern"/>
                     <TextBlock Text="This code was provided by your department's IT administrator"
                                FontSize="11"
-                               Foreground="#9CA3AF"/>
+                               Foreground="{StaticResource TextMutedBrush}"/>
                 </StackPanel>
 
                 <!-- Error Message -->
                 <Border Background="#FEE2E2"
-                        CornerRadius="8"
-                        Padding="12"
+                        CornerRadius="10"
+                        Padding="14"
                         IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#DC2626"
@@ -72,12 +69,7 @@
                         Command="{Binding ConnectCommand}"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
-                        Padding="16"
-                        Background="#1E3A5F"
-                        Foreground="White"
-                        CornerRadius="8"
-                        FontSize="15"
-                        FontWeight="SemiBold"
+                        Classes="primary"
                         IsEnabled="{Binding !IsLoading}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="Connect to Department"
@@ -89,16 +81,9 @@
 
                 <!-- Use Demo Button -->
                 <Button Command="{Binding UseDemoCommand}"
-                        HorizontalAlignment="Stretch"
+                        HorizontalAlignment="Center"
                         HorizontalContentAlignment="Center"
-                        Padding="16"
-                        Background="White"
-                        Foreground="#1E3A5F"
-                        CornerRadius="8"
-                        FontSize="15"
-                        FontWeight="SemiBold"
-                        BorderBrush="#1E3A5F"
-                        BorderThickness="2">
+                        Classes="ghost">
                     <TextBlock Text="Use Demo Department"/>
                 </Button>
             </StackPanel>

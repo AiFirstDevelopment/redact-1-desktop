@@ -271,4 +271,450 @@ public class ApiServiceTests
 
         result.Filename.Should().Be("export.zip");
     }
+
+    [Fact]
+    public async Task LogoutAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.LogoutAsync();
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Post &&
+                r.RequestUri!.ToString().Contains("/auth/logout")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DeleteRequestAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.DeleteRequestAsync("req-1");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Delete &&
+                r.RequestUri!.ToString().Contains("/requests/req-1")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ArchiveRequestAsync_ReturnsArchivedRequest()
+    {
+        var archivedRequest = new RecordsRequest { Id = "req-1", Status = "archived" };
+        SetupResponse(archivedRequest);
+
+        var result = await _apiService.ArchiveRequestAsync("req-1");
+
+        result.Status.Should().Be("archived");
+    }
+
+    [Fact]
+    public async Task UnarchiveRequestAsync_ReturnsRequest()
+    {
+        var request = new RecordsRequest { Id = "req-1", Status = "new" };
+        SetupResponse(request);
+
+        var result = await _apiService.UnarchiveRequestAsync("req-1");
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetArchivedRequestsAsync_ReturnsRequests()
+    {
+        var response = new RequestsListResponse
+        {
+            Requests = new List<RecordsRequest>
+            {
+                new RecordsRequest { Id = "req-1", Status = "archived" }
+            }
+        };
+        SetupResponse(response);
+
+        var result = await _apiService.GetArchivedRequestsAsync();
+
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetArchivedRequestsAsync_WithSearch_SendsCorrectQuery()
+    {
+        SetupResponse(new RequestsListResponse());
+
+        await _apiService.GetArchivedRequestsAsync(search: "test");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString().Contains("search=test")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetUserAsync_ReturnsUser()
+    {
+        var user = new User { Id = "user-1", Name = "Test User" };
+        SetupResponse(user);
+
+        var result = await _apiService.GetUserAsync("user-1");
+
+        result.Name.Should().Be("Test User");
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ReturnsUpdatedUser()
+    {
+        var updatedUser = new User { Id = "user-1", Name = "Updated Name" };
+        SetupResponse(updatedUser);
+
+        var result = await _apiService.UpdateUserAsync("user-1", new UpdateUserRequest
+        {
+            Name = "Updated Name"
+        });
+
+        result.Name.Should().Be("Updated Name");
+    }
+
+    [Fact]
+    public async Task DeleteUserAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.DeleteUserAsync("user-1");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Delete &&
+                r.RequestUri!.ToString().Contains("/users/user-1")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetUserAuditAsync_ReturnsAuditLogs()
+    {
+        var logs = new List<AuditLog>
+        {
+            new AuditLog { Id = "log-1", Action = "create" }
+        };
+        SetupResponse(logs);
+
+        var result = await _apiService.GetUserAuditAsync("user-1");
+
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetRequestAuditAsync_ReturnsAuditLogs()
+    {
+        var logs = new List<AuditLog>
+        {
+            new AuditLog { Id = "log-1", Action = "update" }
+        };
+        SetupResponse(logs);
+
+        var result = await _apiService.GetRequestAuditAsync("req-1");
+
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetFileAsync_ReturnsFile()
+    {
+        var file = new EvidenceFile { Id = "file-1", Filename = "test.pdf" };
+        SetupResponse(file);
+
+        var result = await _apiService.GetFileAsync("file-1");
+
+        result.Filename.Should().Be("test.pdf");
+    }
+
+    [Fact]
+    public async Task GetOriginalFileAsync_ReturnsByteArray()
+    {
+        var fileData = new byte[] { 0x01, 0x02, 0x03 };
+        SetupBinaryResponse(fileData);
+
+        var result = await _apiService.GetOriginalFileAsync("file-1");
+
+        result.Should().BeEquivalentTo(fileData);
+    }
+
+    [Fact]
+    public async Task GetRedactedFileAsync_ReturnsByteArray()
+    {
+        var fileData = new byte[] { 0x04, 0x05, 0x06 };
+        SetupBinaryResponse(fileData);
+
+        var result = await _apiService.GetRedactedFileAsync("file-1");
+
+        result.Should().BeEquivalentTo(fileData);
+    }
+
+    [Fact]
+    public async Task DeleteFileAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.DeleteFileAsync("file-1");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Delete &&
+                r.RequestUri!.ToString().Contains("/files/file-1")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetFileAuditAsync_ReturnsAuditLogs()
+    {
+        var logs = new List<AuditLog>
+        {
+            new AuditLog { Id = "log-1", Action = "upload" }
+        };
+        SetupResponse(logs);
+
+        var result = await _apiService.GetFileAuditAsync("file-1");
+
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task CreateDetectionsAsync_ReturnsCreatedDetections()
+    {
+        var detections = new List<Detection>
+        {
+            new Detection { Id = "det-1", DetectionType = "face" }
+        };
+        SetupResponse(detections);
+
+        var result = await _apiService.CreateDetectionsAsync("file-1", new List<CreateDetectionRequest>
+        {
+            new CreateDetectionRequest { DetectionType = "face" }
+        });
+
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ClearDetectionsAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.ClearDetectionsAsync("file-1");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Delete &&
+                r.RequestUri!.ToString().Contains("/files/file-1/detections")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateManualRedactionAsync_ReturnsRedaction()
+    {
+        var redaction = new ManualRedaction { Id = "red-1", BboxX = 0.1 };
+        SetupResponse(redaction);
+
+        var result = await _apiService.CreateManualRedactionAsync("file-1", new CreateManualRedactionRequest
+        {
+            BboxX = 0.1
+        });
+
+        result.BboxX.Should().Be(0.1);
+    }
+
+    [Fact]
+    public async Task UpdateManualRedactionAsync_ReturnsUpdatedRedaction()
+    {
+        var redaction = new ManualRedaction { Id = "red-1", BboxX = 0.2 };
+        SetupResponse(redaction);
+
+        var result = await _apiService.UpdateManualRedactionAsync("red-1", new CreateManualRedactionRequest
+        {
+            BboxX = 0.2
+        });
+
+        result.BboxX.Should().Be(0.2);
+    }
+
+    [Fact]
+    public async Task DeleteManualRedactionAsync_CallsEndpoint()
+    {
+        SetupEmptyResponse();
+
+        await _apiService.DeleteManualRedactionAsync("red-1");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Delete &&
+                r.RequestUri!.ToString().Contains("/manual-redactions/red-1")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DownloadExportAsync_ReturnsByteArray()
+    {
+        var exportData = new byte[] { 0x50, 0x4B, 0x03, 0x04 };
+        SetupBinaryResponse(exportData);
+
+        var result = await _apiService.DownloadExportAsync("exp-1");
+
+        result.Should().BeEquivalentTo(exportData);
+    }
+
+    [Fact]
+    public async Task GetAgenciesAsync_ReturnsAgencies()
+    {
+        var agencies = new List<Agency>
+        {
+            new Agency { Id = "ag-1", Code = "TEST", Name = "Test Agency" }
+        };
+        SetupResponse(agencies);
+
+        var result = await _apiService.GetAgenciesAsync();
+
+        result.Should().HaveCount(1);
+        result[0].Code.Should().Be("TEST");
+    }
+
+    [Fact]
+    public async Task GetAgencyByCodeAsync_ReturnsAgency()
+    {
+        var agency = new Agency { Id = "ag-1", Code = "TEST", Name = "Test Agency" };
+        SetupResponse(agency);
+
+        var result = await _apiService.GetAgencyByCodeAsync("TEST");
+
+        result.Should().NotBeNull();
+        result!.Code.Should().Be("TEST");
+    }
+
+    [Fact]
+    public async Task GetAgencyByCodeAsync_NotFound_ReturnsNull()
+    {
+        SetupErrorResponse(HttpStatusCode.NotFound);
+
+        var result = await _apiService.GetAgencyByCodeAsync("INVALID");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAgencyByDomainAsync_ReturnsAgency()
+    {
+        var agency = new Agency { Id = "ag-1", Code = "TEST", Name = "Test Agency" };
+        SetupResponse(agency);
+
+        var result = await _apiService.GetAgencyByDomainAsync("test.gov");
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetAgencyByDomainAsync_NotFound_ReturnsNull()
+    {
+        SetupErrorResponse(HttpStatusCode.NotFound);
+
+        var result = await _apiService.GetAgencyByDomainAsync("invalid.com");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void SetAuthToken_WithEmptyString_ClearsHeader()
+    {
+        _apiService.SetAuthToken("test-token");
+        _apiService.SetAuthToken("");
+
+        _httpClient.DefaultRequestHeaders.Authorization.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetRequestsAsync_WithSearchFilter_SendsCorrectQuery()
+    {
+        SetupResponse(new RequestsListResponse());
+
+        await _apiService.GetRequestsAsync(search: "test");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString().Contains("search=test")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetRequestsAsync_WithBothFilters_SendsCorrectQuery()
+    {
+        SetupResponse(new RequestsListResponse());
+
+        await _apiService.GetRequestsAsync(status: "new", search: "test");
+
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.RequestUri!.ToString().Contains("status=new") &&
+                r.RequestUri!.ToString().Contains("search=test")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    private void SetupEmptyResponse()
+    {
+        _mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("")
+            });
+    }
+
+    private void SetupBinaryResponse(byte[] data)
+    {
+        _mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ByteArrayContent(data)
+            });
+    }
+
+    private void SetupErrorResponse(HttpStatusCode statusCode)
+    {
+        _mockHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = statusCode,
+                Content = new StringContent("")
+            });
+    }
 }

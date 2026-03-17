@@ -166,57 +166,17 @@
                              Margin="0,8,0,0"
                              IsVisible="{Binding IsUploading}" />
 
-                <!-- Export Section -->
-                <Border Background="#E5F0E9" CornerRadius="10" Padding="16" Margin="0,8,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border Background="{StaticResource SuccessBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
-                            <TextBlock Text="EXPORT" FontSize="11" FontWeight="Bold" Foreground="White" />
-                        </Border>
-                        <Button Grid.Column="1"
-                                Content="Export"
-                                Background="{StaticResource SuccessBrush}"
-                                Foreground="White"
-                                FontWeight="SemiBold"
-                                CornerRadius="8"
-                                Padding="16,10"
-                                Cursor="Hand"
-                                Command="{Binding CreateExportCommand}" />
-                    </Grid>
-                </Border>
-
-                <ItemsControl ItemsSource="{Binding Exports}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Classes="list-item">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Filename}" FontWeight="Medium" />
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding FileCount}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                                            <TextBlock Text=" files" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <Button Grid.Column="1"
-                                            Content="Download"
-                                            Classes="secondary"
-                                            Command="{Binding $parent[UserControl].DataContext.DownloadExportCommand}"
-                                            CommandParameter="{Binding}" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <!-- Export Button -->
+                <Button Content="Export"
+                        Background="{StaticResource SuccessBrush}"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        CornerRadius="8"
+                        Padding="16,10"
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Left"
+                        Cursor="Hand"
+                        Command="{Binding CreateExportCommand}" />
 
                 <!-- Actions Section -->
                 <Border Background="#F5EDE0" CornerRadius="10" Padding="16" Margin="0,24,0,0">

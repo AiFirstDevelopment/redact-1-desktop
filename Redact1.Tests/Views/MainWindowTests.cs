@@ -94,6 +94,100 @@ public class MainWindowNotEnrolledTests : IDisposable
 }
 
 /// <summary>
+/// Tests for MainWindow with a supervisor user - verifies Users tab is visible
+/// </summary>
+public class MainWindowSupervisorTests : IDisposable
+{
+    private readonly TestServiceProvider _services;
+
+    public MainWindowSupervisorTests()
+    {
+        _services = new TestServiceProvider(isAuthenticated: true, isEnrolled: true, isSupervisor: true);
+        _services.SetupApp();
+
+        _services.MockAuth.Setup(x => x.TryRestoreSessionAsync())
+            .ReturnsAsync(true);
+        _services.MockApi.Setup(x => x.GetRequestsAsync(It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(new List<RecordsRequest>());
+        _services.MockApi.Setup(x => x.GetArchivedRequestsAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<RecordsRequest>());
+        _services.MockApi.Setup(x => x.GetUsersAsync())
+            .ReturnsAsync(new List<User>());
+    }
+
+    public void Dispose()
+    {
+        _services.Dispose();
+    }
+
+    [AvaloniaFact]
+    public void ShowMainContent_SupervisorUser_UsersTabIsVisible()
+    {
+        var window = new MainWindow();
+
+        var method = typeof(MainWindow).GetMethod("ShowMainContent",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        method!.Invoke(window, null);
+
+        // Get the UsersTab field via reflection
+        var usersTabField = typeof(MainWindow).GetField("UsersTab",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var usersTab = usersTabField?.GetValue(window) as Avalonia.Controls.TabItem;
+
+        usersTab.Should().NotBeNull();
+        usersTab!.IsVisible.Should().BeTrue("supervisor users should see the Users tab");
+    }
+}
+
+/// <summary>
+/// Tests for MainWindow with a clerk user - verifies Users tab is hidden
+/// </summary>
+public class MainWindowClerkTests : IDisposable
+{
+    private readonly TestServiceProvider _services;
+
+    public MainWindowClerkTests()
+    {
+        _services = new TestServiceProvider(isAuthenticated: true, isEnrolled: true, isSupervisor: false);
+        _services.SetupApp();
+
+        _services.MockAuth.Setup(x => x.TryRestoreSessionAsync())
+            .ReturnsAsync(true);
+        _services.MockApi.Setup(x => x.GetRequestsAsync(It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(new List<RecordsRequest>());
+        _services.MockApi.Setup(x => x.GetArchivedRequestsAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<RecordsRequest>());
+        _services.MockApi.Setup(x => x.GetUsersAsync())
+            .ReturnsAsync(new List<User>());
+    }
+
+    public void Dispose()
+    {
+        _services.Dispose();
+    }
+
+    [AvaloniaFact]
+    public void ShowMainContent_ClerkUser_UsersTabIsHidden()
+    {
+        var window = new MainWindow();
+
+        var method = typeof(MainWindow).GetMethod("ShowMainContent",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        method!.Invoke(window, null);
+
+        // Get the UsersTab field via reflection
+        var usersTabField = typeof(MainWindow).GetField("UsersTab",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var usersTab = usersTabField?.GetValue(window) as Avalonia.Controls.TabItem;
+
+        usersTab.Should().NotBeNull();
+        usersTab!.IsVisible.Should().BeFalse("clerk users should not see the Users tab");
+    }
+}
+
+/// <summary>
 /// Unit tests for MainWindow using reflection to test private methods
 /// </summary>
 public class MainWindowUnitTests : IDisposable

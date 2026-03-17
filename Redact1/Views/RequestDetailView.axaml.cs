@@ -47,12 +47,7 @@ namespace Redact1.Views
             var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = "Select files to upload",
-                AllowMultiple = true,
-                FileTypeFilter = new[]
-                {
-                    new FilePickerFileType("Documents") { Patterns = new[] { "*.pdf", "*.png", "*.jpg", "*.jpeg" } },
-                    FilePickerFileTypes.All
-                }
+                AllowMultiple = true
             });
 
             Console.WriteLine($"[Upload] Selected {files.Count} files");
@@ -67,18 +62,42 @@ namespace Redact1.Views
                 foreach (var file in files)
                 {
                     var localPath = file.TryGetLocalPath();
-                    Console.WriteLine($"[Upload] Uploading: {localPath}");
+                    Console.WriteLine($"[Upload] File: {file.Name}, LocalPath: {localPath ?? "NULL"}");
+
                     if (localPath != null)
                     {
                         var uploaded = await apiService.UploadFileAsync(_viewModel.Request.Id, localPath);
                         Console.WriteLine($"[Upload] Success: {uploaded.Filename}");
                         _viewModel.Files.Add(uploaded);
                     }
+                    else
+                    {
+                        Console.WriteLine($"[Upload] No local path - reading stream...");
+                        // Read file bytes directly for sandboxed environments
+                        await using var stream = await file.OpenReadAsync();
+                        using var ms = new MemoryStream();
+                        await stream.CopyToAsync(ms);
+                        var bytes = ms.ToArray();
+                        Console.WriteLine($"[Upload] Read {bytes.Length} bytes from {file.Name}");
+
+                        // Save to temp file and upload
+                        var tempPath = Path.Combine(Path.GetTempPath(), file.Name);
+                        await File.WriteAllBytesAsync(tempPath, bytes);
+                        Console.WriteLine($"[Upload] Saved to temp: {tempPath}");
+
+                        var uploaded = await apiService.UploadFileAsync(_viewModel.Request.Id, tempPath);
+                        Console.WriteLine($"[Upload] Success: {uploaded.Filename}");
+                        _viewModel.Files.Add(uploaded);
+
+                        // Clean up temp file
+                        File.Delete(tempPath);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Upload] Error: {ex.Message}");
+                Console.WriteLine($"[Upload] Stack: {ex.StackTrace}");
             }
             finally
             {

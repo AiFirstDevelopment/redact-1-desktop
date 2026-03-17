@@ -191,16 +191,39 @@ namespace Redact1.Services
 
         public async Task<EvidenceFile> UploadFileAsync(string requestId, string filePath)
         {
-            using var form = new MultipartFormDataContent();
-            using var fileStream = File.OpenRead(filePath);
-            var fileContent = new StreamContent(fileStream);
-            var mimeType = GetMimeType(filePath);
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-            form.Add(fileContent, "file", Path.GetFileName(filePath));
+            Console.WriteLine($"[API] Uploading to /api/requests/{requestId}/files");
+            Console.WriteLine($"[API] Auth header: {_httpClient.DefaultRequestHeaders.Authorization}");
 
-            var response = await _httpClient.PostAsync($"/api/requests/{requestId}/files", form);
+            var fileBytes = await File.ReadAllBytesAsync(filePath);
+            var filename = Path.GetFileName(filePath);
+            var mimeType = GetMimeType(filePath);
+            var boundary = Guid.NewGuid().ToString();
+
+            Console.WriteLine($"[API] File: {filename}, Size: {fileBytes.Length}, MimeType: {mimeType}");
+
+            // Build multipart body manually like iOS
+            using var body = new MemoryStream();
+            using var writer = new StreamWriter(body, Encoding.UTF8, leaveOpen: true);
+
+            await writer.WriteAsync($"--{boundary}\r\n");
+            await writer.WriteAsync($"Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n");
+            await writer.WriteAsync($"Content-Type: {mimeType}\r\n\r\n");
+            await writer.FlushAsync();
+            await body.WriteAsync(fileBytes);
+            await writer.WriteAsync($"\r\n--{boundary}--\r\n");
+            await writer.FlushAsync();
+
+            body.Position = 0;
+            var content = new StreamContent(body);
+            content.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
+            content.Headers.ContentType.Parameters.Add(new NameValueHeaderValue("boundary", boundary));
+
+            var response = await _httpClient.PostAsync($"/api/requests/{requestId}/files", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[API] Response: {response.StatusCode} - {responseBody}");
+
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<FileUploadResponse>()
+            var result = JsonSerializer.Deserialize<FileUploadResponse>(responseBody)
                          ?? throw new Exception("Failed to deserialize response");
             return result.File;
         }

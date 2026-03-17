@@ -4,42 +4,48 @@
              Background="#18181F">
 
     <UserControl.Styles>
-        <!-- Toolbar button styles -->
+        <!-- Toolbar button styles - soft pastel on brick header -->
         <Style Selector="Button.toolbar-btn">
-            <Setter Property="Background" Value="#FFFFFF20" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#D4B8A8" />
+            <Setter Property="Foreground" Value="#3D3632" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="16,10" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover">
+            <Setter Property="Background" Value="#E5CFC2" />
         </Style>
         <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFFFFF40" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#E5CFC2" />
+            <Setter Property="Foreground" Value="#3D3632" />
         </Style>
         <Style Selector="Button.toolbar-btn:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFFFFF60" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#C9A999" />
+            <Setter Property="Foreground" Value="#3D3632" />
         </Style>
 
-        <!-- Success button on toolbar -->
+        <!-- Success button on toolbar - soft sage green -->
         <Style Selector="Button.toolbar-success">
-            <Setter Property="Background" Value="#10B981" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#8FB8A0" />
+            <Setter Property="Foreground" Value="#2D3E35" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="16,10" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
+        <Style Selector="Button.toolbar-success:pointerover">
+            <Setter Property="Background" Value="#A3C9B3" />
+        </Style>
         <Style Selector="Button.toolbar-success:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#059669" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#A3C9B3" />
+            <Setter Property="Foreground" Value="#2D3E35" />
         </Style>
         <Style Selector="Button.toolbar-success:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#047857" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#7AA88F" />
+            <Setter Property="Foreground" Value="#2D3E35" />
         </Style>
     </UserControl.Styles>
 

@@ -69,6 +69,26 @@ public class RequestDetailViewTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void RequestArchived_EventIsAvailable()
+    {
+        var view = new RequestDetailView();
+        var eventRaised = false;
+        view.RequestArchived += (s, e) => eventRaised = true;
+
+        view.Should().NotBeNull();
+    }
+
+    [AvaloniaFact]
+    public void RequestDeleted_EventIsAvailable()
+    {
+        var view = new RequestDetailView();
+        var eventRaised = false;
+        view.RequestDeleted += (s, e) => eventRaised = true;
+
+        view.Should().NotBeNull();
+    }
+
+    [AvaloniaFact]
     public void FileItem_Click_WithBorderAndFile_ExecutesCommand()
     {
         var view = new RequestDetailView();

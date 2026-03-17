@@ -203,4 +203,212 @@ public class UsersViewModelTests : IDisposable
         _services.MockApi.Verify(x => x.DeleteUserAsync(user.Id), Times.Once);
         vm.Users.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task StartEditUserCommand_WithNullUser_DoesNothing()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+
+        vm.StartEditUserCommand.Execute(null);
+        await Task.Delay(50);
+
+        vm.IsEditing.Should().BeFalse();
+        vm.SelectedUser.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task DeleteUserCommand_WithNullUser_DoesNothing()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+
+        vm.DeleteUserCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockApi.Verify(x => x.DeleteUserAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveUserCommand_UpdateUser_WithPassword_UpdatesPassword()
+    {
+        var existingUser = MockApiService.CreateTestUser();
+        var updatedUser = new User { Id = existingUser.Id, Name = "Test", Email = existingUser.Email, Role = "clerk" };
+
+        _services.MockApi.Setup(x => x.GetUsersAsync())
+            .ReturnsAsync(new List<User> { existingUser });
+        _services.MockApi.Setup(x => x.UpdateUserAsync(It.IsAny<string>(), It.IsAny<UpdateUserRequest>()))
+            .ReturnsAsync(updatedUser);
+
+        var vm = _services.GetService<UsersViewModel>();
+        await vm.LoadUsersAsync();
+        vm.StartEditUserCommand.Execute(existingUser);
+        vm.EditPassword = "newpassword123";
+
+        vm.SaveUserCommand.Execute(null);
+        await Task.Delay(100);
+
+        _services.MockApi.Verify(x => x.UpdateUserAsync(existingUser.Id, It.Is<UpdateUserRequest>(r =>
+            r.Password == "newpassword123"
+        )), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveUserCommand_OnError_SetsErrorMessage()
+    {
+        _services.MockApi.Setup(x => x.CreateUserAsync(It.IsAny<CreateUserRequest>()))
+            .ThrowsAsync(new Exception("Failed to create user"));
+
+        var vm = _services.GetService<UsersViewModel>();
+        vm.StartCreateUserCommand.Execute(null);
+        vm.EditName = "New User";
+        vm.EditEmail = "new@test.com";
+        vm.EditPassword = "password123";
+
+        vm.SaveUserCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Failed to create user");
+    }
+
+    [Fact]
+    public async Task DeleteUserCommand_OnError_SetsErrorMessage()
+    {
+        var user = MockApiService.CreateTestUser();
+        _services.MockApi.Setup(x => x.GetUsersAsync())
+            .ReturnsAsync(new List<User> { user });
+        _services.MockApi.Setup(x => x.DeleteUserAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Cannot delete user"));
+
+        var vm = _services.GetService<UsersViewModel>();
+        await vm.LoadUsersAsync();
+
+        vm.DeleteUserCommand.Execute(user);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Cannot delete user");
+    }
+
+    [Fact]
+    public async Task SaveUserCommand_WithEmptyEmail_SetsError()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        vm.StartCreateUserCommand.Execute(null);
+        vm.EditName = "Test User";
+        vm.EditEmail = "";
+
+        vm.SaveUserCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("required");
+    }
+
+    [Fact]
+    public async Task SaveUserCommand_UpdateUser_IndexNotFound_StillCompletes()
+    {
+        var existingUser = MockApiService.CreateTestUser();
+        var updatedUser = new User { Id = existingUser.Id, Name = "Updated", Email = existingUser.Email, Role = "clerk" };
+
+        _services.MockApi.Setup(x => x.UpdateUserAsync(It.IsAny<string>(), It.IsAny<UpdateUserRequest>()))
+            .ReturnsAsync(updatedUser);
+
+        var vm = _services.GetService<UsersViewModel>();
+        // Don't load users, so the user won't be in the collection
+        vm.SelectedUser = existingUser;
+        vm.IsEditing = true;
+        vm.EditName = "Updated";
+        vm.EditEmail = existingUser.Email;
+        vm.EditRole = "clerk";
+
+        vm.SaveUserCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.IsEditing.Should().BeFalse();
+    }
+
+    [Fact]
+    public void LoadUsersCommand_Exists()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+
+        vm.LoadUsersCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Users_CanBeSet()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        var users = new System.Collections.ObjectModel.ObservableCollection<User>();
+
+        vm.Users = users;
+
+        vm.Users.Should().BeSameAs(users);
+    }
+
+    [Fact]
+    public void SelectedUser_CanBeSet()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        var user = MockApiService.CreateTestUser();
+
+        vm.SelectedUser = user;
+
+        vm.SelectedUser.Should().Be(user);
+    }
+
+    [Fact]
+    public void EditName_PropertyChanged_RaisesEvent()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        var propertyChanged = false;
+        vm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(vm.EditName))
+                propertyChanged = true;
+        };
+
+        vm.EditName = "New Name";
+
+        propertyChanged.Should().BeTrue();
+    }
+
+    [Fact]
+    public void EditEmail_PropertyChanged_RaisesEvent()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        var propertyChanged = false;
+        vm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(vm.EditEmail))
+                propertyChanged = true;
+        };
+
+        vm.EditEmail = "new@email.com";
+
+        propertyChanged.Should().BeTrue();
+    }
+
+    [Fact]
+    public void EditRole_PropertyChanged_RaisesEvent()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+        var propertyChanged = false;
+        vm.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(vm.EditRole))
+                propertyChanged = true;
+        };
+
+        vm.EditRole = "supervisor";
+
+        propertyChanged.Should().BeTrue();
+    }
+
+    [Fact]
+    public void EditPassword_CanBeSet()
+    {
+        var vm = _services.GetService<UsersViewModel>();
+
+        vm.EditPassword = "newpassword";
+
+        vm.EditPassword.Should().Be("newpassword");
+    }
 }

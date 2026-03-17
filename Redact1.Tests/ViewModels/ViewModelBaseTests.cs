@@ -136,6 +136,18 @@ public class RelayCommandGenericTests
         command.CanExecute("valid").Should().BeTrue();
         command.CanExecute("invalid").Should().BeFalse();
     }
+
+    [Fact]
+    public void RaiseCanExecuteChanged_RaisesEvent()
+    {
+        var command = new RelayCommand<string>(s => { });
+        var eventRaised = false;
+        command.CanExecuteChanged += (s, e) => eventRaised = true;
+
+        command.RaiseCanExecuteChanged();
+
+        eventRaised.Should().BeTrue();
+    }
 }
 
 public class AsyncRelayCommandTests
@@ -233,6 +245,62 @@ public class AsyncRelayCommandGenericTests
         command.Execute("test");
         command.CanExecute("test").Should().BeFalse();
 
+        tcs.SetResult();
+    }
+
+    [Fact]
+    public void RaiseCanExecuteChanged_RaisesEvent()
+    {
+        var command = new AsyncRelayCommand<string>(async s => await Task.CompletedTask);
+        var eventRaised = false;
+        command.CanExecuteChanged += (s, e) => eventRaised = true;
+
+        command.RaiseCanExecuteChanged();
+
+        eventRaised.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CanExecute_WithPredicate_ReturnsPredicate()
+    {
+        var command = new AsyncRelayCommand<string>(async s => await Task.CompletedTask, s => s == "valid");
+
+        command.CanExecute("valid").Should().BeTrue();
+        command.CanExecute("invalid").Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Execute_RaisesCanExecuteChangedTwice()
+    {
+        var tcs = new TaskCompletionSource();
+        var command = new AsyncRelayCommand<string>(s => tcs.Task);
+        var raiseCount = 0;
+        command.CanExecuteChanged += (s, e) => raiseCount++;
+
+        command.Execute("test");
+        raiseCount.Should().Be(1);
+
+        tcs.SetResult();
+        await Task.Delay(50);
+        raiseCount.Should().Be(2);
+    }
+
+    [Fact]
+    public void Execute_WhenAlreadyExecuting_DoesNotExecuteAgain()
+    {
+        var executeCount = 0;
+        var tcs = new TaskCompletionSource();
+        var command = new AsyncRelayCommand<string>(s =>
+        {
+            executeCount++;
+            return tcs.Task;
+        });
+
+        command.Execute("test");
+        command.Execute("test");
+        command.Execute("test");
+
+        executeCount.Should().Be(1);
         tcs.SetResult();
     }
 }

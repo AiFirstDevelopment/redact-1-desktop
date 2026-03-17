@@ -178,4 +178,39 @@ public class AuthServiceTests
         _authService.CurrentUser.Should().BeNull();
         eventUser.Should().BeNull();
     }
+
+    [Fact]
+    public void CurrentAgency_ReturnsAgencyConfig()
+    {
+        _authService.SetDepartmentCode("TEST");
+
+        var agency = _authService.CurrentAgency;
+
+        agency.Should().NotBeNull();
+        agency!.Code.Should().Be("TEST");
+    }
+
+    [Fact]
+    public void CurrentAgency_WhenNoConfig_ReturnsNull()
+    {
+        var agency = _authService.CurrentAgency;
+
+        agency.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task TryRestoreSessionAsync_RaisesAuthStateChangedEvent()
+    {
+        var user = MockApiService.CreateTestUser();
+        _mockStorageService.Object.SetAuthToken("valid-token");
+        _mockStorageService.Object.SetUser(user);
+        _mockApiService.Setup(x => x.GetCurrentUserAsync()).ReturnsAsync(user);
+
+        User? eventUser = null;
+        _authService.AuthStateChanged += (s, u) => eventUser = u;
+
+        await _authService.TryRestoreSessionAsync();
+
+        eventUser.Should().NotBeNull();
+    }
 }

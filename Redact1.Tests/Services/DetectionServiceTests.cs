@@ -59,4 +59,247 @@ public class DetectionServiceTests
 
         result.Should().BeEmpty();
     }
+
+    [Fact]
+    public void DetectPiiInText_DetectsSSN()
+    {
+        var text = "My SSN is 123-45-6789 please keep it safe.";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("ssn");
+        result[0].TextContent.Should().Be("123-45-6789");
+        result[0].Confidence.Should().Be(0.95);
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsMultipleSSNs()
+    {
+        var text = "SSN1: 123-45-6789, SSN2: 987-65-4321";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(d => d.DetectionType.Should().Be("ssn"));
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsPhoneWithParentheses()
+    {
+        var text = "Call me at (555) 123-4567";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("phone");
+        result[0].TextContent.Should().Be("(555) 123-4567");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsPhoneWithDashes()
+    {
+        var text = "Call me at 555-123-4567";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("phone");
+        result[0].TextContent.Should().Be("555-123-4567");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsPhoneWithDots()
+    {
+        var text = "Call me at 555.123.4567";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("phone");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsEmail()
+    {
+        var text = "Email me at john.doe@example.com please";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("email");
+        result[0].TextContent.Should().Be("john.doe@example.com");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsMultipleEmails()
+    {
+        var text = "Contact: john@test.com or jane@test.org";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(d => d.DetectionType.Should().Be("email"));
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsDOB()
+    {
+        var text = "Born on 03/15/1990";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("dob");
+        result[0].TextContent.Should().Be("03/15/1990");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsDOBWithDashes()
+    {
+        var text = "DOB: 12-25-2000";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("dob");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsLicensePlate()
+    {
+        var text = "License plate: ABC1234";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("plate");
+        result[0].TextContent.Should().Be("ABC1234");
+    }
+
+    [Fact]
+    public void DetectPiiInText_IgnoresInvalidLicensePlate_NoLetters()
+    {
+        var text = "Number: 12345678";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_IgnoresInvalidLicensePlate_NoDigits()
+    {
+        var text = "Code: ABCDEFGH";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsMultiplePiiTypes()
+    {
+        var text = "SSN: 123-45-6789, Email: test@test.com, Phone: (555) 123-4567";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().HaveCount(3);
+        result.Should().Contain(d => d.DetectionType == "ssn");
+        result.Should().Contain(d => d.DetectionType == "email");
+        result.Should().Contain(d => d.DetectionType == "phone");
+    }
+
+    [Fact]
+    public void DetectPiiInText_ReturnsEmptyForNoMatches()
+    {
+        var text = "This text has no PII data.";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_SetsTextStartAndEnd()
+    {
+        var text = "SSN: 123-45-6789";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].TextStart.Should().Be(5);
+        result[0].TextEnd.Should().Be(16);
+    }
+
+    [Fact]
+    public void DetectPiiInText_HandlesEmptyString()
+    {
+        var text = "";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsLicensePlate_5Characters()
+    {
+        var text = "Plate: ABC12";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("plate");
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsLicensePlate_8Characters()
+    {
+        var text = "Plate: ABCD1234";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("plate");
+    }
+
+    [Fact]
+    public void DetectPiiInText_IgnoresLicensePlate_TooShort()
+    {
+        var text = "Short: AB12";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_IgnoresLicensePlate_TooLong()
+    {
+        var text = "Long: ABCDEF123456789";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DetectPiiInText_DetectsSSNWithDifferentFormat()
+    {
+        var text = "SSN: 000-00-0000";
+
+        var result = _service.DetectPiiInText(text);
+
+        result.Should().ContainSingle();
+        result[0].DetectionType.Should().Be("ssn");
+    }
+
+    [Fact]
+    public async Task DetectInPdfPageAsync_ReturnsEmptyForEmptyPage()
+    {
+        var result = await _service.DetectInPdfPageAsync(new byte[] { 0x00 }, 1);
+
+        result.Should().NotBeNull();
+    }
 }

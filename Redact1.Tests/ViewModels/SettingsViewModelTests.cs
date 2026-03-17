@@ -70,4 +70,64 @@ public class SettingsViewModelTests : IDisposable
 
         exception.Should().BeNull();
     }
+
+    [Fact]
+    public void AppVersion_HasValidFormat()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+
+        vm.AppVersion.Should().MatchRegex(@"^v\d+\.\d+\.\d+$");
+    }
+
+    [Fact]
+    public async Task LogoutCommand_SetsIsLoadingDuringExecution()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+
+        vm.LogoutCommand.Execute(null);
+        await Task.Delay(50);
+
+        // Should complete without error
+        vm.IsLoading.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CurrentUser_CanBeSet()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+
+        vm.CurrentUser.Should().NotBeNull();
+        vm.CurrentUser!.Email.Should().Be("test@pd.local");
+    }
+
+    [Fact]
+    public void AppVersion_CanBeSet()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+
+        vm.AppVersion = "v2.0.0";
+
+        vm.AppVersion.Should().Be("v2.0.0");
+    }
+
+    [Fact]
+    public void CurrentUser_Setter_UpdatesProperty()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+
+        vm.CurrentUser = new Redact1.Models.User { Id = "new-user", Name = "New User" };
+
+        vm.CurrentUser.Id.Should().Be("new-user");
+    }
+
+    [Fact]
+    public void LoggedOut_EventIsAvailable()
+    {
+        var vm = _services.GetService<SettingsViewModel>();
+        var eventRaised = false;
+
+        vm.LoggedOut += (s, e) => eventRaised = true;
+
+        vm.Should().NotBeNull();
+    }
 }

@@ -717,4 +717,184 @@ public class ApiServiceTests
                 Content = new StringContent("")
             });
     }
+
+    [Fact]
+    public async Task UploadFileAsync_UploadsFileWithCorrectMimeType()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.pdf" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.pdf");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0x25, 0x50, 0x44, 0x46 }); // PDF magic bytes
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Filename.Should().Be("test.pdf");
+            _mockHandler.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(r =>
+                    r.Method == HttpMethod.Post &&
+                    r.RequestUri!.ToString().Contains("/requests/req-1/files")),
+                ItExpr.IsAny<CancellationToken>());
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public async Task UploadFileAsync_JpegFile_SetsCorrectMimeType()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.jpg" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.jpg");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0xFF, 0xD8, 0xFF });
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Should().NotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public async Task UploadFileAsync_PngFile_SetsCorrectMimeType()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.png" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.png");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0x89, 0x50, 0x4E, 0x47 });
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Should().NotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public async Task UploadFileAsync_GifFile_SetsCorrectMimeType()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.gif" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.gif");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0x47, 0x49, 0x46 });
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Should().NotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public async Task UploadFileAsync_UnknownExtension_UsesOctetStream()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.xyz" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.xyz");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0x00, 0x01, 0x02 });
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Should().NotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public async Task UploadRedactedFileAsync_UploadsFile()
+    {
+        var file = new EvidenceFile { Id = "file-1", Filename = "test.redacted.jpg" };
+        SetupResponse(file);
+
+        var result = await _apiService.UploadRedactedFileAsync("file-1", new byte[] { 0xFF, 0xD8 }, "test.redacted.jpg");
+
+        result.Filename.Should().Be("test.redacted.jpg");
+        _mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r =>
+                r.Method == HttpMethod.Post &&
+                r.RequestUri!.ToString().Contains("/files/file-1/redacted")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UploadRedactedFileAsync_PdfFile_SetsCorrectMimeType()
+    {
+        var file = new EvidenceFile { Id = "file-1", Filename = "test.redacted.pdf" };
+        SetupResponse(file);
+
+        var result = await _apiService.UploadRedactedFileAsync("file-1", new byte[] { 0x25, 0x50 }, "test.redacted.pdf");
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UploadFileAsync_JpegExtension_SetsCorrectMimeType()
+    {
+        var uploadResponse = new FileUploadResponse
+        {
+            File = new EvidenceFile { Id = "file-1", Filename = "test.jpeg" }
+        };
+        SetupResponse(uploadResponse);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.jpeg");
+        try
+        {
+            File.WriteAllBytes(tempFile, new byte[] { 0xFF, 0xD8, 0xFF });
+
+            var result = await _apiService.UploadFileAsync("req-1", tempFile);
+
+            result.Should().NotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
 }

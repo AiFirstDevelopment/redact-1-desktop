@@ -92,4 +92,72 @@ public class EnrollmentViewModelTests : IDisposable
 
         propertyChanged.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ConnectCommand_NormalizesCodeToUppercase()
+    {
+        var vm = _services.GetService<EnrollmentViewModel>();
+        vm.DepartmentCode = "lowercase-code";
+
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockAuth.Verify(x => x.SetDepartmentCode("LOWERCASE-CODE"), Moq.Times.Once);
+    }
+
+    [Fact]
+    public async Task ConnectCommand_TrimsWhitespace()
+    {
+        var vm = _services.GetService<EnrollmentViewModel>();
+        vm.DepartmentCode = "  CODE  ";
+
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockAuth.Verify(x => x.SetDepartmentCode("CODE"), Moq.Times.Once);
+    }
+
+    [Fact]
+    public async Task ConnectCommand_WithWhitespaceOnly_SetsError()
+    {
+        var vm = _services.GetService<EnrollmentViewModel>();
+        vm.DepartmentCode = "   ";
+
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+
+        vm.ErrorMessage.Should().Contain("enter a department code");
+    }
+
+    [Fact]
+    public async Task ConnectCommand_OnException_SetsConnectionError()
+    {
+        _services.MockAuth.Setup(x => x.SetDepartmentCode(Moq.It.IsAny<string>()))
+            .Throws(new Exception("Connection failed"));
+
+        var vm = _services.GetService<EnrollmentViewModel>();
+        vm.DepartmentCode = "VALID-CODE";
+
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+
+        vm.ErrorMessage.Should().Contain("Connection failed");
+    }
+
+    [Fact]
+    public async Task ConnectCommand_ClearsErrorBeforeConnect()
+    {
+        var vm = _services.GetService<EnrollmentViewModel>();
+        vm.DepartmentCode = "";
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+        vm.ErrorMessage.Should().NotBeNull();
+
+        vm.DepartmentCode = "VALID-CODE";
+        vm.ConnectCommand.Execute(null);
+        await Task.Delay(50);
+
+        // Error should have been cleared before the successful connect
+        vm.ErrorMessage.Should().BeNullOrEmpty();
+    }
 }

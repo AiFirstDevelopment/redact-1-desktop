@@ -50,7 +50,7 @@ namespace Redact1.Services
             return Task.FromResult(string.Empty);
         }
 
-        private List<CreateDetectionRequest> DetectPiiInText(string text)
+        internal List<CreateDetectionRequest> DetectPiiInText(string text)
         {
             var detections = new List<CreateDetectionRequest>();
 

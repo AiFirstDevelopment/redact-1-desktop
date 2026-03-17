@@ -17,7 +17,7 @@ dotnet test Redact1.Tests/Redact1.Tests.csproj
 
 ## Testing Guidelines
 
-**IMPORTANT: All tests must use the integration test framework with Avalonia.Headless - no unit tests.**
+**IMPORTANT: All tests must use the integration test framework with Avalonia.Headless. Unit tests are acceptable for cases where integration tests are too difficult or for pure logic.**
 
 ### Test Architecture
 - Use `TestServiceProvider` to create a fully wired DI container with mock services
@@ -50,6 +50,9 @@ public class MyViewModelTests : IDisposable
 
 ### Pre-commit Hook
 A pre-commit hook runs all tests before each commit. Tests must pass to commit.
+
+### Test Failure Policy
+**IMPORTANT:** If an existing test fails, assume that it is identifying a regression until proven otherwise. Never modify an existing test without checking with the user first.
 
 ## Architecture
 

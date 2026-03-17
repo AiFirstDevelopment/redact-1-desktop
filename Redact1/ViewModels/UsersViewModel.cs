@@ -12,7 +12,9 @@ namespace Redact1.ViewModels
 
         private ObservableCollection<User> _users = new();
         private User? _selectedUser;
+        private User? _userToDelete;
         private bool _isEditing;
+        private bool _isConfirmingDelete;
         private string _editName = string.Empty;
         private string _editEmail = string.Empty;
         private string _editRole = "clerk";
@@ -34,6 +36,18 @@ namespace Redact1.ViewModels
         {
             get => _isEditing;
             set => SetProperty(ref _isEditing, value);
+        }
+
+        public bool IsConfirmingDelete
+        {
+            get => _isConfirmingDelete;
+            set => SetProperty(ref _isConfirmingDelete, value);
+        }
+
+        public User? UserToDelete
+        {
+            get => _userToDelete;
+            set => SetProperty(ref _userToDelete, value);
         }
 
         public string EditName
@@ -65,7 +79,9 @@ namespace Redact1.ViewModels
         public ICommand StartEditUserCommand { get; }
         public ICommand SaveUserCommand { get; }
         public ICommand CancelEditCommand { get; }
-        public ICommand DeleteUserCommand { get; }
+        public ICommand RequestDeleteUserCommand { get; }
+        public ICommand ConfirmDeleteCommand { get; }
+        public ICommand CancelDeleteCommand { get; }
 
         public UsersViewModel()
         {
@@ -76,7 +92,9 @@ namespace Redact1.ViewModels
             StartEditUserCommand = new RelayCommand<User>(StartEditUser);
             SaveUserCommand = new AsyncRelayCommand(SaveUserAsync);
             CancelEditCommand = new RelayCommand(CancelEdit);
-            DeleteUserCommand = new AsyncRelayCommand<User>(DeleteUserAsync);
+            RequestDeleteUserCommand = new RelayCommand<User>(RequestDeleteUser);
+            ConfirmDeleteCommand = new AsyncRelayCommand(ConfirmDeleteAsync);
+            CancelDeleteCommand = new RelayCommand(CancelDelete);
         }
 
         public async Task LoadUsersAsync()
@@ -195,19 +213,37 @@ namespace Redact1.ViewModels
             SelectedUser = null;
         }
 
-        private async Task DeleteUserAsync(User? user)
+        private void RequestDeleteUser(User? user)
         {
             if (user == null) return;
+            UserToDelete = user;
+            IsConfirmingDelete = true;
+        }
+
+        private async Task ConfirmDeleteAsync()
+        {
+            if (UserToDelete == null) return;
 
             try
             {
-                await _apiService.DeleteUserAsync(user.Id);
-                Users.Remove(user);
+                await _apiService.DeleteUserAsync(UserToDelete.Id);
+                Users.Remove(UserToDelete);
             }
             catch (Exception ex)
             {
                 SetError(ex);
             }
+            finally
+            {
+                IsConfirmingDelete = false;
+                UserToDelete = null;
+            }
+        }
+
+        private void CancelDelete()
+        {
+            IsConfirmingDelete = false;
+            UserToDelete = null;
         }
     }
 }

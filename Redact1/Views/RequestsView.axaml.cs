@@ -48,5 +48,13 @@ namespace Redact1.Views
                 _viewModel?.OpenRequestCommand.Execute(request);
             }
         }
+
+        public async Task RefreshAsync()
+        {
+            if (_viewModel != null)
+            {
+                await _viewModel.LoadRequestsAsync();
+            }
+        }
     }
 }

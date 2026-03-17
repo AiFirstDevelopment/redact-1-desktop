@@ -3,16 +3,38 @@
              x:Class="Redact1.Views.RequestDetailView"
              Background="{StaticResource SurfaceBrush}">
 
+    <UserControl.Styles>
+        <!-- Header buttons with dark text for yellow hover -->
+        <Style Selector="Button.header-btn">
+            <Setter Property="Background" Value="#FFFFFF25" />
+            <Setter Property="Foreground" Value="#1A1A2E" />
+            <Setter Property="BorderBrush" Value="#FFFFFF50" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style Selector="Button.header-save">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#5B4ED9" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Header with accent color -->
         <Border Grid.Row="0"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="0,0,0,1"
+                Background="{StaticResource PrimaryBrush}"
                 Padding="20,16">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -23,19 +45,20 @@
 
                 <Button Grid.Column="0"
                         Content="Close"
-                        Classes="icon"
+                        Classes="header-btn"
                         x:Name="CloseButton" />
 
                 <TextBlock Grid.Column="1"
                            Text="{Binding Request.RequestNumber}"
                            FontSize="18"
                            FontWeight="SemiBold"
+                           Foreground="White"
                            VerticalAlignment="Center"
                            Margin="16,0,0,0" />
 
                 <Button Grid.Column="2"
                         Content="Save"
-                        Classes="primary"
+                        Classes="header-save"
                         Command="{Binding SaveChangesCommand}" />
             </Grid>
         </Border>
@@ -63,18 +86,25 @@
                          Margin="0,0,0,24" />
 
                 <!-- Files Section -->
-                <Grid Margin="0,0,0,16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <Border Background="#F5F3FF" CornerRadius="10" Padding="16" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Files" FontSize="16" FontWeight="SemiBold" />
-                    <Button Grid.Column="1"
-                            Content="+ Upload"
-                            Classes="secondary"
-                            Command="{Binding UploadFileCommand}" />
-                </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Background="{StaticResource PrimaryBrush}" CornerRadius="6" Padding="8,4">
+                                <TextBlock Text="FILES" FontSize="11" FontWeight="Bold" Foreground="White" />
+                            </Border>
+                            <TextBlock Text="{Binding Files.Count}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="+ Upload"
+                                Classes="primary"
+                                x:Name="UploadButton" />
+                    </Grid>
+                </Border>
 
                 <!-- Files List -->
                 <ItemsControl ItemsSource="{Binding Files}">
@@ -115,13 +145,30 @@
                              IsVisible="{Binding IsUploading}" />
 
                 <!-- Exports Section -->
-                <TextBlock Text="Exports" FontSize="16" FontWeight="SemiBold" Margin="0,24,0,16" />
+                <Border Background="#ECFDF5" CornerRadius="10" Padding="16" Margin="0,8,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                <Button Content="Create Export"
-                        Classes="secondary"
-                        Command="{Binding CreateExportCommand}"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,0,16" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Background="{StaticResource SuccessBrush}" CornerRadius="6" Padding="8,4">
+                                <TextBlock Text="EXPORTS" FontSize="11" FontWeight="Bold" Foreground="White" />
+                            </Border>
+                            <TextBlock Text="{Binding Exports.Count}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="Create Export"
+                                Background="{StaticResource SuccessBrush}"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                CornerRadius="8"
+                                Padding="16,10"
+                                Cursor="Hand"
+                                Command="{Binding CreateExportCommand}" />
+                    </Grid>
+                </Border>
 
                 <ItemsControl ItemsSource="{Binding Exports}">
                     <ItemsControl.ItemTemplate>
@@ -151,6 +198,34 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- Actions Section -->
+                <Border Background="#FEF3C7" CornerRadius="10" Padding="16" Margin="0,24,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Background="{StaticResource WarningBrush}" CornerRadius="6" Padding="8,4">
+                                <TextBlock Text="ACTIONS" FontSize="11" FontWeight="Bold" Foreground="White" />
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="Archive"
+                                Classes="secondary"
+                                Command="{Binding ArchiveRequestCommand}"
+                                Margin="0,0,8,0" />
+
+                        <Button Grid.Column="2"
+                                Content="Delete"
+                                Classes="danger"
+                                Command="{Binding RequestDeleteCommand}" />
+                    </Grid>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
@@ -159,6 +234,51 @@
                 Background="#80FFFFFF"
                 IsVisible="{Binding IsLoading}">
             <ProgressBar IsIndeterminate="True" Width="200" Height="4" VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Delete Confirmation Modal -->
+        <Border Grid.RowSpan="2"
+                Background="#80000000"
+                IsVisible="{Binding IsConfirmingDelete}">
+            <Border Classes="card"
+                    Width="400"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Confirm Delete"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ErrorBrush}"
+                               Margin="0,0,0,16" />
+
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,24">
+                        <Run Text="Are you sure you want to delete this request? This action cannot be undone." />
+                    </TextBlock>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="Cancel"
+                                Classes="secondary"
+                                Command="{Binding CancelDeleteRequestCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,0,8,0" />
+
+                        <Button Grid.Column="1"
+                                Content="Delete"
+                                Classes="danger"
+                                Command="{Binding ConfirmDeleteRequestCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="8,0,0,0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Border>
     </Grid>
 </UserControl>

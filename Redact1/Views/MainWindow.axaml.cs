@@ -124,6 +124,8 @@ namespace Redact1.Views
             RequestDetailView.LoadRequest(request.Id);
             RequestDetailView.FileSelected += OnFileSelected;
             RequestDetailView.RequestClosed += OnRequestClosed;
+            RequestDetailView.RequestArchived += OnRequestArchived;
+            RequestDetailView.RequestDeleted += OnRequestDeleted;
         }
 
         private void OnRequestClosed(object? sender, EventArgs e)
@@ -131,6 +133,34 @@ namespace Redact1.Views
             DetailPanel.IsVisible = false;
             RequestDetailView.FileSelected -= OnFileSelected;
             RequestDetailView.RequestClosed -= OnRequestClosed;
+            RequestDetailView.RequestArchived -= OnRequestArchived;
+            RequestDetailView.RequestDeleted -= OnRequestDeleted;
+        }
+
+        private void OnRequestArchived(object? sender, EventArgs e)
+        {
+            DetailPanel.IsVisible = false;
+            RequestDetailView.FileSelected -= OnFileSelected;
+            RequestDetailView.RequestClosed -= OnRequestClosed;
+            RequestDetailView.RequestArchived -= OnRequestArchived;
+            RequestDetailView.RequestDeleted -= OnRequestDeleted;
+
+            // Refresh requests lists
+            _ = RequestsView.RefreshAsync();
+            _ = ArchivedView.RefreshAsync();
+        }
+
+        private void OnRequestDeleted(object? sender, EventArgs e)
+        {
+            DetailPanel.IsVisible = false;
+            RequestDetailView.FileSelected -= OnFileSelected;
+            RequestDetailView.RequestClosed -= OnRequestClosed;
+            RequestDetailView.RequestArchived -= OnRequestArchived;
+            RequestDetailView.RequestDeleted -= OnRequestDeleted;
+
+            // Refresh requests lists
+            _ = RequestsView.RefreshAsync();
+            _ = ArchivedView.RefreshAsync();
         }
 
         private void OnFileSelected(object? sender, EvidenceFile file)

@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Redact1.Views.RequestsView"
-             Background="{StaticResource BackgroundBrush}">
+             Background="{StaticResource SidebarBrush}">
 
     <Grid Margin="28">
         <Grid.RowDefinitions>
@@ -85,15 +85,27 @@
                     <DataTemplate>
                         <Border Classes="card"
                                 Margin="0,0,0,14"
-                                Padding="20"
+                                Padding="0"
                                 Cursor="Hand"
                                 PointerPressed="RequestItem_Click">
                             <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Colored accent bar -->
+                                <Border Grid.Column="0"
+                                        Background="{StaticResource PrimaryBrush}"
+                                        CornerRadius="16,0,0,16" />
+
+                            <Grid Grid.Column="1" Margin="20">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
@@ -106,11 +118,11 @@
 
                                     <Border Padding="10,5"
                                             CornerRadius="6"
-                                            Background="#EDE9FE">
+                                            Background="{StaticResource PrimaryBrush}">
                                         <TextBlock Text="{Binding StatusDisplay}"
                                                    FontSize="12"
-                                                   FontWeight="Medium"
-                                                   Foreground="{StaticResource PrimaryBrush}" />
+                                                   FontWeight="SemiBold"
+                                                   Foreground="White" />
                                     </Border>
                                 </StackPanel>
 
@@ -126,6 +138,25 @@
                                            FontSize="14"
                                            Margin="0,10,0,0"
                                            TextTrimming="CharacterEllipsis" />
+
+                                <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2"
+                                            Orientation="Horizontal"
+                                            Spacing="8"
+                                            Margin="0,12,0,0">
+                                    <Button Content="Archive"
+                                            Classes="secondary"
+                                            FontSize="12"
+                                            Padding="12,6"
+                                            Command="{Binding $parent[UserControl].DataContext.ArchiveRequestCommand}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Content="Delete"
+                                            Classes="danger"
+                                            FontSize="12"
+                                            Padding="12,6"
+                                            Command="{Binding $parent[UserControl].DataContext.RequestDeleteCommand}"
+                                            CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </Grid>
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -149,5 +180,52 @@
                        HorizontalAlignment="Center"
                        Margin="0,8,0,0" />
         </StackPanel>
+
+        <!-- Delete Confirmation Modal -->
+        <Border Grid.RowSpan="3"
+                Background="#80000000"
+                IsVisible="{Binding IsConfirmingDelete}">
+            <Border Classes="card"
+                    Width="400"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Confirm Delete"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ErrorBrush}"
+                               Margin="0,0,0,16" />
+
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,24">
+                        <Run Text="Are you sure you want to delete " />
+                        <Run Text="{Binding RequestToDelete.RequestNumber}" FontWeight="SemiBold" />
+                        <Run Text="? This action cannot be undone." />
+                    </TextBlock>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="Cancel"
+                                Classes="secondary"
+                                Command="{Binding CancelDeleteCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,0,8,0" />
+
+                        <Button Grid.Column="1"
+                                Content="Delete"
+                                Classes="danger"
+                                Command="{Binding ConfirmDeleteCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="8,0,0,0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>

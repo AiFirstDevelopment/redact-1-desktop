@@ -188,7 +188,7 @@ public class UsersViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteUserCommand_DeletesUser()
+    public async Task ConfirmDeleteCommand_DeletesUser()
     {
         var user = MockApiService.CreateTestUser();
         _services.MockApi.Setup(x => x.GetUsersAsync())
@@ -196,8 +196,9 @@ public class UsersViewModelTests : IDisposable
 
         var vm = _services.GetService<UsersViewModel>();
         await vm.LoadUsersAsync();
+        vm.RequestDeleteUserCommand.Execute(user);
 
-        vm.DeleteUserCommand.Execute(user);
+        vm.ConfirmDeleteCommand.Execute(null);
         await Task.Delay(100);
 
         _services.MockApi.Verify(x => x.DeleteUserAsync(user.Id), Times.Once);
@@ -217,14 +218,15 @@ public class UsersViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteUserCommand_WithNullUser_DoesNothing()
+    public async Task RequestDeleteUserCommand_WithNullUser_DoesNothing()
     {
         var vm = _services.GetService<UsersViewModel>();
 
-        vm.DeleteUserCommand.Execute(null);
+        vm.RequestDeleteUserCommand.Execute(null);
         await Task.Delay(50);
 
-        _services.MockApi.Verify(x => x.DeleteUserAsync(It.IsAny<string>()), Times.Never);
+        vm.IsConfirmingDelete.Should().BeFalse();
+        vm.UserToDelete.Should().BeNull();
     }
 
     [Fact]
@@ -270,7 +272,7 @@ public class UsersViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteUserCommand_OnError_SetsErrorMessage()
+    public async Task ConfirmDeleteCommand_OnError_SetsErrorMessage()
     {
         var user = MockApiService.CreateTestUser();
         _services.MockApi.Setup(x => x.GetUsersAsync())
@@ -280,8 +282,9 @@ public class UsersViewModelTests : IDisposable
 
         var vm = _services.GetService<UsersViewModel>();
         await vm.LoadUsersAsync();
+        vm.RequestDeleteUserCommand.Execute(user);
 
-        vm.DeleteUserCommand.Execute(user);
+        vm.ConfirmDeleteCommand.Execute(null);
         await Task.Delay(100);
 
         vm.ErrorMessage.Should().Contain("Cannot delete user");

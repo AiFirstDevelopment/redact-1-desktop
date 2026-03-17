@@ -479,4 +479,209 @@ public class RequestDetailViewModelTests : IDisposable
 
         propertyChanged.Should().BeTrue();
     }
+
+    // Archive and Delete tests
+
+    [Fact]
+    public void IsConfirmingDelete_DefaultsToFalse()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.IsConfirmingDelete.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsConfirmingDelete_CanBeSet()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.IsConfirmingDelete = true;
+        vm.IsConfirmingDelete.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RequestDeleteCommand_SetsIsConfirmingDeleteToTrue()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+
+        vm.RequestDeleteCommand.Execute(null);
+
+        vm.IsConfirmingDelete.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CancelDeleteRequestCommand_SetsIsConfirmingDeleteToFalse()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.IsConfirmingDelete = true;
+
+        vm.CancelDeleteRequestCommand.Execute(null);
+
+        vm.IsConfirmingDelete.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteRequestCommand_DeletesRequest()
+    {
+        _services.MockApi.Setup(x => x.DeleteRequestAsync(It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+        vm.IsConfirmingDelete = true;
+
+        vm.ConfirmDeleteRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        _services.MockApi.Verify(x => x.DeleteRequestAsync("req-123"), Times.Once);
+        vm.IsConfirmingDelete.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteRequestCommand_RaisesRequestDeletedEvent()
+    {
+        _services.MockApi.Setup(x => x.DeleteRequestAsync(It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+        var eventRaised = false;
+        vm.RequestDeleted += (s, e) => eventRaised = true;
+
+        vm.ConfirmDeleteRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        eventRaised.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteRequestCommand_WithNullRequest_DoesNothing()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.Request = null;
+
+        vm.ConfirmDeleteRequestCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockApi.Verify(x => x.DeleteRequestAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteRequestCommand_OnError_SetsErrorMessage()
+    {
+        _services.MockApi.Setup(x => x.DeleteRequestAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Cannot delete"));
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+
+        vm.ConfirmDeleteRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Cannot delete");
+        vm.IsConfirmingDelete.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_ArchivesRequest()
+    {
+        var archivedRequest = MockApiService.CreateTestRequest();
+        _services.MockApi.Setup(x => x.ArchiveRequestAsync(It.IsAny<string>()))
+            .ReturnsAsync(archivedRequest);
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+
+        vm.ArchiveRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        _services.MockApi.Verify(x => x.ArchiveRequestAsync("req-123"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_RaisesRequestArchivedEvent()
+    {
+        var archivedRequest = MockApiService.CreateTestRequest();
+        _services.MockApi.Setup(x => x.ArchiveRequestAsync(It.IsAny<string>()))
+            .ReturnsAsync(archivedRequest);
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+        var eventRaised = false;
+        vm.RequestArchived += (s, e) => eventRaised = true;
+
+        vm.ArchiveRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        eventRaised.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_WithNullRequest_DoesNothing()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.Request = null;
+
+        vm.ArchiveRequestCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockApi.Verify(x => x.ArchiveRequestAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_OnError_SetsErrorMessage()
+    {
+        _services.MockApi.Setup(x => x.ArchiveRequestAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Cannot archive"));
+
+        var vm = _services.GetService<RequestDetailViewModel>();
+        await vm.LoadRequestAsync("req-123");
+
+        vm.ArchiveRequestCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Cannot archive");
+    }
+
+    [Fact]
+    public void ArchiveRequestCommand_Exists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.ArchiveRequestCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void RequestDeleteCommand_Exists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.RequestDeleteCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ConfirmDeleteRequestCommand_Exists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.ConfirmDeleteRequestCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CancelDeleteRequestCommand_Exists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.CancelDeleteRequestCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void RequestArchived_EventExists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.RequestArchived += (s, e) => { };
+        // Should not throw
+    }
+
+    [Fact]
+    public void RequestDeleted_EventExists()
+    {
+        var vm = _services.GetService<RequestDetailViewModel>();
+        vm.RequestDeleted += (s, e) => { };
+        // Should not throw
+    }
 }

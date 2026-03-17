@@ -165,4 +165,200 @@ public class RequestsViewModelTests : IDisposable
 
         eventRaised.Should().BeFalse();
     }
+
+    // Archive and Delete tests
+
+    [Fact]
+    public void IsConfirmingDelete_DefaultsToFalse()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.IsConfirmingDelete.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsConfirmingDelete_CanBeSet()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.IsConfirmingDelete = true;
+        vm.IsConfirmingDelete.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RequestToDelete_DefaultsToNull()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.RequestToDelete.Should().BeNull();
+    }
+
+    [Fact]
+    public void RequestToDelete_CanBeSet()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.RequestToDelete = request;
+        vm.RequestToDelete.Should().Be(request);
+    }
+
+    [Fact]
+    public void RequestDeleteCommand_SetsIsConfirmingDeleteAndRequestToDelete()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+
+        vm.RequestDeleteCommand.Execute(request);
+
+        vm.IsConfirmingDelete.Should().BeTrue();
+        vm.RequestToDelete.Should().Be(request);
+    }
+
+    [Fact]
+    public void RequestDeleteCommand_WithNull_DoesNothing()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+
+        vm.RequestDeleteCommand.Execute(null);
+
+        vm.IsConfirmingDelete.Should().BeFalse();
+        vm.RequestToDelete.Should().BeNull();
+    }
+
+    [Fact]
+    public void CancelDeleteCommand_ClearsState()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.RequestToDelete = request;
+        vm.IsConfirmingDelete = true;
+
+        vm.CancelDeleteCommand.Execute(null);
+
+        vm.IsConfirmingDelete.Should().BeFalse();
+        vm.RequestToDelete.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteCommand_DeletesRequest()
+    {
+        _services.MockApi.Setup(x => x.DeleteRequestAsync(It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.Requests.Add(request);
+        vm.RequestToDelete = request;
+        vm.IsConfirmingDelete = true;
+
+        vm.ConfirmDeleteCommand.Execute(null);
+        await Task.Delay(100);
+
+        _services.MockApi.Verify(x => x.DeleteRequestAsync(request.Id), Times.Once);
+        vm.Requests.Should().NotContain(request);
+        vm.IsConfirmingDelete.Should().BeFalse();
+        vm.RequestToDelete.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteCommand_WithNullRequestToDelete_DoesNothing()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.RequestToDelete = null;
+
+        vm.ConfirmDeleteCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockApi.Verify(x => x.DeleteRequestAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteCommand_OnError_SetsErrorMessage()
+    {
+        _services.MockApi.Setup(x => x.DeleteRequestAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Cannot delete"));
+
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.Requests.Add(request);
+        vm.RequestToDelete = request;
+        vm.IsConfirmingDelete = true;
+
+        vm.ConfirmDeleteCommand.Execute(null);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Cannot delete");
+        vm.IsConfirmingDelete.Should().BeFalse();
+        vm.RequestToDelete.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_ArchivesRequest()
+    {
+        var archivedRequest = MockApiService.CreateTestRequest();
+        _services.MockApi.Setup(x => x.ArchiveRequestAsync(It.IsAny<string>()))
+            .ReturnsAsync(archivedRequest);
+
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.Requests.Add(request);
+
+        vm.ArchiveRequestCommand.Execute(request);
+        await Task.Delay(100);
+
+        _services.MockApi.Verify(x => x.ArchiveRequestAsync(request.Id), Times.Once);
+        vm.Requests.Should().NotContain(request);
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_WithNull_DoesNothing()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+
+        vm.ArchiveRequestCommand.Execute(null);
+        await Task.Delay(50);
+
+        _services.MockApi.Verify(x => x.ArchiveRequestAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ArchiveRequestCommand_OnError_SetsErrorMessage()
+    {
+        _services.MockApi.Setup(x => x.ArchiveRequestAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Cannot archive"));
+
+        var vm = _services.GetService<RequestsViewModel>();
+        var request = MockApiService.CreateTestRequest();
+        vm.Requests.Add(request);
+
+        vm.ArchiveRequestCommand.Execute(request);
+        await Task.Delay(100);
+
+        vm.ErrorMessage.Should().Contain("Cannot archive");
+    }
+
+    [Fact]
+    public void ArchiveRequestCommand_Exists()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.ArchiveRequestCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void RequestDeleteCommand_Exists()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.RequestDeleteCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ConfirmDeleteCommand_Exists()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.ConfirmDeleteCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CancelDeleteCommand_Exists()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.CancelDeleteCommand.Should().NotBeNull();
+    }
 }

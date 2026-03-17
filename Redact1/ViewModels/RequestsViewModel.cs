@@ -12,8 +12,22 @@ namespace Redact1.ViewModels
         private string _searchText = string.Empty;
         private string _statusFilter = "all";
         private bool _showArchived;
+        private bool _isConfirmingDelete;
+        private RecordsRequest? _requestToDelete;
 
         public ObservableCollection<RecordsRequest> Requests { get; } = new();
+
+        public bool IsConfirmingDelete
+        {
+            get => _isConfirmingDelete;
+            set => SetProperty(ref _isConfirmingDelete, value);
+        }
+
+        public RecordsRequest? RequestToDelete
+        {
+            get => _requestToDelete;
+            set => SetProperty(ref _requestToDelete, value);
+        }
 
         public string SearchText
         {
@@ -43,6 +57,10 @@ namespace Redact1.ViewModels
 
         public ICommand CreateRequestCommand { get; }
         public ICommand OpenRequestCommand { get; }
+        public ICommand ArchiveRequestCommand { get; }
+        public ICommand RequestDeleteCommand { get; }
+        public ICommand ConfirmDeleteCommand { get; }
+        public ICommand CancelDeleteCommand { get; }
 
         public event EventHandler<RecordsRequest>? RequestSelected;
 
@@ -51,6 +69,10 @@ namespace Redact1.ViewModels
             _apiService = App.Services.GetRequiredService<IApiService>();
             CreateRequestCommand = new AsyncRelayCommand(CreateRequestAsync);
             OpenRequestCommand = new RelayCommand<RecordsRequest>(OpenRequest);
+            ArchiveRequestCommand = new AsyncRelayCommand<RecordsRequest>(ArchiveRequestAsync);
+            RequestDeleteCommand = new RelayCommand<RecordsRequest>(RequestDelete);
+            ConfirmDeleteCommand = new AsyncRelayCommand(ConfirmDeleteAsync);
+            CancelDeleteCommand = new RelayCommand(CancelDelete);
         }
 
         public async Task LoadRequestsAsync()
@@ -130,6 +152,54 @@ namespace Redact1.ViewModels
         {
             if (request != null)
                 RequestSelected?.Invoke(this, request);
+        }
+
+        private async Task ArchiveRequestAsync(RecordsRequest? request)
+        {
+            if (request == null) return;
+
+            try
+            {
+                await _apiService.ArchiveRequestAsync(request.Id);
+                Requests.Remove(request);
+            }
+            catch (Exception ex)
+            {
+                SetError(ex);
+            }
+        }
+
+        private void RequestDelete(RecordsRequest? request)
+        {
+            if (request == null) return;
+            RequestToDelete = request;
+            IsConfirmingDelete = true;
+        }
+
+        private async Task ConfirmDeleteAsync()
+        {
+            if (RequestToDelete == null) return;
+
+            try
+            {
+                await _apiService.DeleteRequestAsync(RequestToDelete.Id);
+                Requests.Remove(RequestToDelete);
+            }
+            catch (Exception ex)
+            {
+                SetError(ex);
+            }
+            finally
+            {
+                IsConfirmingDelete = false;
+                RequestToDelete = null;
+            }
+        }
+
+        private void CancelDelete()
+        {
+            IsConfirmingDelete = false;
+            RequestToDelete = null;
         }
     }
 }

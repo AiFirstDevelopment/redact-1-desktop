@@ -192,12 +192,15 @@ public class ApiServiceTests
     [Fact]
     public async Task GetUsersAsync_ReturnsUsers()
     {
-        var users = new List<User>
+        var usersResponse = new UsersListResponse
         {
-            new User { Id = "user-1", Name = "User 1" },
-            new User { Id = "user-2", Name = "User 2" }
+            Users = new List<User>
+            {
+                new User { Id = "user-1", Name = "User 1" },
+                new User { Id = "user-2", Name = "User 2" }
+            }
         };
-        SetupResponse(users);
+        SetupResponse(usersResponse);
 
         var result = await _apiService.GetUsersAsync();
 

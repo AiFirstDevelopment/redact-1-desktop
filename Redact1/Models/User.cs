@@ -86,4 +86,10 @@ namespace Redact1.Models
         [JsonPropertyName("password")]
         public string? Password { get; set; }
     }
+
+    public class UsersListResponse
+    {
+        [JsonPropertyName("users")]
+        public List<User> Users { get; set; } = new();
+    }
 }

@@ -63,7 +63,7 @@
                                             Margin="0,0,8,0" />
                                     <Button Content="Delete"
                                             Classes="danger"
-                                            Command="{Binding $parent[UserControl].DataContext.DeleteUserCommand}"
+                                            Command="{Binding $parent[UserControl].DataContext.RequestDeleteUserCommand}"
                                             CommandParameter="{Binding}" />
                                 </StackPanel>
                             </Grid>
@@ -126,6 +126,53 @@
                                 Content="Save"
                                 Classes="primary"
                                 Command="{Binding SaveUserCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="8,0,0,0" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Delete Confirmation Modal -->
+        <Border Grid.RowSpan="2"
+                Background="#80000000"
+                IsVisible="{Binding IsConfirmingDelete}">
+            <Border Classes="card"
+                    Width="400"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Confirm Delete"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ErrorBrush}"
+                               Margin="0,0,0,16" />
+
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,24">
+                        <Run Text="Are you sure you want to delete " />
+                        <Run Text="{Binding UserToDelete.Name}" FontWeight="SemiBold" />
+                        <Run Text="? This action cannot be undone." />
+                    </TextBlock>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="Cancel"
+                                Classes="secondary"
+                                Command="{Binding CancelDeleteCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,0,8,0" />
+
+                        <Button Grid.Column="1"
+                                Content="Delete"
+                                Classes="danger"
+                                Command="{Binding ConfirmDeleteCommand}"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 Margin="8,0,0,0" />

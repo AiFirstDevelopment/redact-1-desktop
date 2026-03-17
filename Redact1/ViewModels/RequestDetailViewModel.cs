@@ -18,6 +18,7 @@ namespace Redact1.ViewModels
         private string _notes = string.Empty;
         private string _status = "new";
         private bool _isUploading;
+        private bool _isConfirmingDelete;
 
         public RecordsRequest? Request
         {
@@ -67,6 +68,12 @@ namespace Redact1.ViewModels
             set => SetProperty(ref _isUploading, value);
         }
 
+        public bool IsConfirmingDelete
+        {
+            get => _isConfirmingDelete;
+            set => SetProperty(ref _isConfirmingDelete, value);
+        }
+
         public ICommand LoadFilesCommand { get; }
         public ICommand LoadExportsCommand { get; }
         public ICommand SaveChangesCommand { get; }
@@ -76,9 +83,15 @@ namespace Redact1.ViewModels
         public ICommand CreateExportCommand { get; }
         public ICommand DownloadExportCommand { get; }
         public ICommand CloseCommand { get; }
+        public ICommand ArchiveRequestCommand { get; }
+        public ICommand RequestDeleteCommand { get; }
+        public ICommand ConfirmDeleteRequestCommand { get; }
+        public ICommand CancelDeleteRequestCommand { get; }
 
         public event EventHandler<EvidenceFile>? FileSelected;
         public event EventHandler? RequestClosed;
+        public event EventHandler? RequestArchived;
+        public event EventHandler? RequestDeleted;
 
         public RequestDetailViewModel()
         {
@@ -93,6 +106,10 @@ namespace Redact1.ViewModels
             CreateExportCommand = new AsyncRelayCommand(CreateExportAsync);
             DownloadExportCommand = new AsyncRelayCommand<Export>(DownloadExportAsync);
             CloseCommand = new RelayCommand(Close);
+            ArchiveRequestCommand = new AsyncRelayCommand(ArchiveRequestAsync);
+            RequestDeleteCommand = new RelayCommand(RequestDelete);
+            ConfirmDeleteRequestCommand = new AsyncRelayCommand(ConfirmDeleteRequestAsync);
+            CancelDeleteRequestCommand = new RelayCommand(CancelDeleteRequest);
         }
 
         public async Task LoadRequestAsync(string requestId)
@@ -239,6 +256,48 @@ namespace Redact1.ViewModels
         private void Close()
         {
             RequestClosed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private async Task ArchiveRequestAsync()
+        {
+            if (Request == null) return;
+
+            try
+            {
+                await _apiService.ArchiveRequestAsync(Request.Id);
+                RequestArchived?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                SetError(ex);
+            }
+        }
+
+        private void RequestDelete()
+        {
+            IsConfirmingDelete = true;
+        }
+
+        private async Task ConfirmDeleteRequestAsync()
+        {
+            if (Request == null) return;
+
+            try
+            {
+                await _apiService.DeleteRequestAsync(Request.Id);
+                IsConfirmingDelete = false;
+                RequestDeleted?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                SetError(ex);
+                IsConfirmingDelete = false;
+            }
+        }
+
+        private void CancelDeleteRequest()
+        {
+            IsConfirmingDelete = false;
         }
     }
 }

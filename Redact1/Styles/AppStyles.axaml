@@ -16,12 +16,14 @@
             <Color x:Key="SuccessColor">#10B981</Color>
             <Color x:Key="WarningColor">#F59E0B</Color>
             <Color x:Key="ErrorColor">#EF4444</Color>
+            <Color x:Key="InfoColor">#3B82F6</Color>
 
-            <!-- Surfaces - Warm grays -->
-            <Color x:Key="BackgroundColor">#F8F7FA</Color>
+            <!-- Surfaces - Warm with subtle tints -->
+            <Color x:Key="BackgroundColor">#F5F3FF</Color>
+            <Color x:Key="SidebarColor">#EDE9FE</Color>
             <Color x:Key="SurfaceColor">#FFFFFF</Color>
             <Color x:Key="SurfaceHoverColor">#F3F2F7</Color>
-            <Color x:Key="BorderColor">#E5E2EF</Color>
+            <Color x:Key="BorderColor">#DDD6FE</Color>
 
             <!-- Text -->
             <Color x:Key="TextPrimaryColor">#1F1F2E</Color>
@@ -36,7 +38,9 @@
             <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
             <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+            <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
             <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+            <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
             <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
             <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{StaticResource SurfaceHoverColor}" />
             <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />

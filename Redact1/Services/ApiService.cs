@@ -96,7 +96,8 @@ namespace Redact1.Services
         // Users
         public async Task<List<User>> GetUsersAsync()
         {
-            return await GetAsync<List<User>>("/users");
+            var response = await GetAsync<UsersListResponse>("/users");
+            return response.Users;
         }
 
         public async Task<User> CreateUserAsync(CreateUserRequest request)

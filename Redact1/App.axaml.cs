@@ -70,6 +70,7 @@ namespace Redact1
             services.AddTransient<MainViewModel>();
             services.AddTransient<RequestsViewModel>();
             services.AddTransient<RequestDetailViewModel>();
+            services.AddTransient<NewRequestViewModel>();
             services.AddTransient<FileReviewViewModel>();
             services.AddTransient<UsersViewModel>();
             services.AddTransient<SettingsViewModel>();

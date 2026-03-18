@@ -12,6 +12,7 @@ namespace Redact1.Views
         private RequestsViewModel? _viewModel;
 
         public event EventHandler<RecordsRequest>? RequestSelected;
+        public event EventHandler? NewRequestRequested;
 
         public RequestsView()
         {
@@ -31,6 +32,7 @@ namespace Redact1.Views
             _viewModel = App.Services.GetRequiredService<RequestsViewModel>();
             _viewModel.ShowArchived = showArchived;
             _viewModel.RequestSelected += (s, r) => RequestSelected?.Invoke(this, r);
+            _viewModel.NewRequestRequested += (s, e) => NewRequestRequested?.Invoke(this, e);
 
             DataContext = _viewModel;
 
@@ -55,6 +57,11 @@ namespace Redact1.Views
             {
                 await _viewModel.LoadRequestsAsync();
             }
+        }
+
+        public void AddRequest(RecordsRequest request)
+        {
+            _viewModel?.AddRequest(request);
         }
     }
 }

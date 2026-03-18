@@ -1,0 +1,138 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Redact1.Views.NewRequestView"
+             Background="{StaticResource SurfaceBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{StaticResource PrimaryBrush}"
+                Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Content="Cancel"
+                        Classes="header-btn"
+                        x:Name="CancelButton" />
+
+                <TextBlock Grid.Column="1"
+                           Text="New Request"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+
+                <Button Grid.Column="2"
+                        Content="Create"
+                        Classes="header-save"
+                        x:Name="CreateButton"
+                        IsEnabled="{Binding CanCreate}" />
+            </Grid>
+        </Border>
+
+        <!-- Form Content -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel MaxWidth="600" HorizontalAlignment="Left">
+
+                <!-- Request Number -->
+                <TextBlock Text="Request Number" FontWeight="Medium" Margin="0,0,0,8" />
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding RequestNumber}"
+                             Classes="modern" />
+                    <Button Grid.Column="1"
+                            Content="Generate"
+                            Classes="secondary"
+                            Margin="8,0,0,0"
+                            x:Name="GenerateButton" />
+                </Grid>
+
+                <!-- Title -->
+                <TextBlock Text="Title" FontWeight="Medium" Margin="0,0,0,8" />
+                <TextBox Text="{Binding Title}"
+                         Classes="modern"
+                         Watermark="Enter request title"
+                         Margin="0,0,0,16" />
+
+                <!-- Request Date -->
+                <TextBlock Text="Request Date" FontWeight="Medium" Margin="0,0,0,8" />
+                <DatePicker SelectedDate="{Binding RequestDate}"
+                            Margin="0,0,0,16" />
+
+                <!-- Notes -->
+                <TextBlock Text="Notes" FontWeight="Medium" Margin="0,0,0,8" />
+                <TextBox Text="{Binding Notes}"
+                         Classes="modern"
+                         AcceptsReturn="True"
+                         Height="100"
+                         TextWrapping="Wrap"
+                         Watermark="Optional notes"
+                         Margin="0,0,0,24" />
+
+                <!-- Error Message -->
+                <Border Background="#FFEBEE"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,16"
+                        IsVisible="{Binding HasError}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="{StaticResource ErrorBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Border Grid.RowSpan="2"
+                Background="#80FFFFFF"
+                IsVisible="{Binding IsLoading}">
+            <ProgressBar IsIndeterminate="True" Width="200" Height="4" VerticalAlignment="Center" />
+        </Border>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.header-btn">
+            <Setter Property="Background" Value="#D4B8A8" />
+            <Setter Property="Foreground" Value="#3D3632" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.header-btn:pointerover">
+            <Setter Property="Background" Value="#E5CFC2" />
+        </Style>
+
+        <Style Selector="Button.header-save">
+            <Setter Property="Background" Value="#FAF7F4" />
+            <Setter Property="Foreground" Value="#8B5E47" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.header-save:pointerover">
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="Button.header-save:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </UserControl.Styles>
+</UserControl>

@@ -63,6 +63,7 @@ namespace Redact1.ViewModels
         public ICommand CancelDeleteCommand { get; }
 
         public event EventHandler<RecordsRequest>? RequestSelected;
+        public event EventHandler? NewRequestRequested;
 
         public RequestsViewModel()
         {
@@ -115,37 +116,16 @@ namespace Redact1.ViewModels
             }
         }
 
-        private async Task CreateRequestAsync()
+        private Task CreateRequestAsync()
         {
-            Console.WriteLine("CreateRequestAsync called");
-            IsLoading = true;
-            ClearError();
+            NewRequestRequested?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
+        }
 
-            var requestNumber = $"FOIA-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
-            var payload = new CreateRequestPayload
-            {
-                RequestNumber = requestNumber,
-                Title = "New Request",
-                RequestDate = DateTimeOffset.Now.ToUnixTimeMilliseconds()
-            };
-
-            try
-            {
-                Console.WriteLine($"Creating request: {requestNumber}");
-                var request = await _apiService.CreateRequestAsync(payload);
-                Console.WriteLine($"Request created: {request.Id}");
-                Requests.Insert(0, request);
-                RequestSelected?.Invoke(this, request);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error creating request: {ex.Message}");
-                SetError(ex);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+        public void AddRequest(RecordsRequest request)
+        {
+            Requests.Insert(0, request);
+            RequestSelected?.Invoke(this, request);
         }
 
         private void OpenRequest(RecordsRequest? request)

@@ -91,9 +91,9 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
-    <!-- Danger Button - Soft rose -->
+    <!-- Danger Button - Same style as primary but for destructive actions -->
     <Style Selector="Button.danger">
-        <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="Padding" Value="20,12" />
         <Setter Property="CornerRadius" Value="10" />
@@ -102,11 +102,11 @@
         <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="#B57D7C" />
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
     <Style Selector="Button.danger:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="#A06A69" />
+        <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 

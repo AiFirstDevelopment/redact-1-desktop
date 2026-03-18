@@ -95,6 +95,17 @@
             <views:RequestDetailView x:Name="RequestDetailView" />
         </Border>
 
+        <!-- New Request Panel -->
+        <Border x:Name="NewRequestPanel"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,0,0,0"
+                HorizontalAlignment="Right"
+                Width="500"
+                IsVisible="False">
+            <views:NewRequestView x:Name="NewRequestView" />
+        </Border>
+
         <!-- File Review (full screen overlay) -->
         <Border x:Name="FileReviewPanel"
                 Background="{StaticResource SurfaceBrush}"

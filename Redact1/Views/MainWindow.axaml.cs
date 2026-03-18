@@ -116,6 +116,32 @@ namespace Redact1.Views
         {
             view.Initialize(showArchived);
             view.RequestSelected += OnRequestSelected;
+            view.NewRequestRequested += OnNewRequestRequested;
+        }
+
+        private void OnNewRequestRequested(object? sender, EventArgs e)
+        {
+            NewRequestView.Initialize();
+            NewRequestPanel.IsVisible = true;
+            NewRequestView.Cancelled += OnNewRequestCancelled;
+            NewRequestView.RequestCreated += OnNewRequestCreated;
+        }
+
+        private void OnNewRequestCancelled(object? sender, EventArgs e)
+        {
+            NewRequestPanel.IsVisible = false;
+            NewRequestView.Cancelled -= OnNewRequestCancelled;
+            NewRequestView.RequestCreated -= OnNewRequestCreated;
+        }
+
+        private void OnNewRequestCreated(object? sender, RecordsRequest request)
+        {
+            NewRequestPanel.IsVisible = false;
+            NewRequestView.Cancelled -= OnNewRequestCancelled;
+            NewRequestView.RequestCreated -= OnNewRequestCreated;
+
+            // Add the request to the list and open it
+            RequestsView.AddRequest(request);
         }
 
         private void OnRequestSelected(object? sender, RecordsRequest request)

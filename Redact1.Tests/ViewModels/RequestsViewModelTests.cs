@@ -102,37 +102,17 @@ public class RequestsViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateRequestCommand_CreatesRequest()
+    public void CreateRequestCommand_RaisesNewRequestRequestedEvent_Legacy()
     {
         var vm = _services.GetService<RequestsViewModel>();
         var eventRaised = false;
-        RecordsRequest? selectedRequest = null;
-        vm.RequestSelected += (s, r) =>
-        {
-            eventRaised = true;
-            selectedRequest = r;
-        };
+        vm.NewRequestRequested += (s, e) => eventRaised = true;
 
         vm.CreateRequestCommand.Execute(null);
-        await Task.Delay(100);
 
-        _services.MockApi.Verify(x => x.CreateRequestAsync(It.IsAny<CreateRequestPayload>()), Times.Once);
-        vm.Requests.Should().HaveCount(1);
         eventRaised.Should().BeTrue();
-        selectedRequest.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task CreateRequestCommand_OnError_SetsErrorMessage()
-    {
-        _services.MockApi.Setup(x => x.CreateRequestAsync(It.IsAny<CreateRequestPayload>()))
-            .ThrowsAsync(new Exception("Failed to create"));
-
-        var vm = _services.GetService<RequestsViewModel>();
-        vm.CreateRequestCommand.Execute(null);
-        await Task.Delay(100);
-
-        vm.ErrorMessage.Should().Contain("Failed to create");
+        // No longer creates request directly - now shows form first
+        _services.MockApi.Verify(x => x.CreateRequestAsync(It.IsAny<CreateRequestPayload>()), Times.Never);
     }
 
     [Fact]
@@ -360,5 +340,57 @@ public class RequestsViewModelTests : IDisposable
     {
         var vm = _services.GetService<RequestsViewModel>();
         vm.CancelDeleteCommand.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CreateRequestCommand_RaisesNewRequestRequestedEvent()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        var eventRaised = false;
+        vm.NewRequestRequested += (s, e) => eventRaised = true;
+
+        vm.CreateRequestCommand.Execute(null);
+
+        eventRaised.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NewRequestRequested_EventExists()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        vm.NewRequestRequested += (s, e) => { };
+    }
+
+    [Fact]
+    public void AddRequest_InsertsRequestAtBeginning()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        var existingRequest = MockApiService.CreateTestRequest();
+        existingRequest.Id = "existing";
+        vm.Requests.Add(existingRequest);
+
+        var newRequest = MockApiService.CreateTestRequest();
+        newRequest.Id = "new";
+
+        vm.AddRequest(newRequest);
+
+        vm.Requests.Should().HaveCount(2);
+        vm.Requests[0].Id.Should().Be("new");
+    }
+
+    [Fact]
+    public void AddRequest_RaisesRequestSelectedEvent()
+    {
+        var vm = _services.GetService<RequestsViewModel>();
+        RecordsRequest? selectedRequest = null;
+        vm.RequestSelected += (s, r) => selectedRequest = r;
+
+        var newRequest = MockApiService.CreateTestRequest();
+        newRequest.Id = "new-req";
+
+        vm.AddRequest(newRequest);
+
+        selectedRequest.Should().NotBeNull();
+        selectedRequest!.Id.Should().Be("new-req");
     }
 }

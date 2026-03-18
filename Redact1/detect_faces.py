@@ -22,17 +22,35 @@ def detect_faces(image_path, cascade_path):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.equalizeHist(gray)
 
-    # Detect faces
+    # Detect faces - use original sensitivity but filter false positives
     faces = face_cascade.detectMultiScale(
         gray,
         scaleFactor=1.1,
         minNeighbors=5,
-        minSize=(30, 30)
+        minSize=(40, 40)
     )
+
+    # Filter out false positives: remove detections that are directly below another
+    # (e.g., chest/throat area detected below a face)
+    filtered_faces = []
+    for (x, y, w, h) in faces:
+        is_below_another = False
+        for (x2, y2, w2, h2) in faces:
+            if (x, y, w, h) == (x2, y2, w2, h2):
+                continue
+            # Check if this detection is directly below another (overlapping x-range)
+            x_overlap = (x < x2 + w2) and (x + w > x2)
+            is_below = y > y2 + h2 * 0.5  # This face starts below the middle of the other
+            close_vertically = y < y2 + h2 * 1.5  # And is close enough to be a false positive
+            if x_overlap and is_below and close_vertically:
+                is_below_another = True
+                break
+        if not is_below_another:
+            filtered_faces.append((x, y, w, h))
 
     # Convert to normalized coordinates
     result = []
-    for (x, y, w, h) in faces:
+    for (x, y, w, h) in filtered_faces:
         result.append({
             "x": x / width,
             "y": y / height,

@@ -275,21 +275,30 @@ namespace Redact1.ViewModels
 
         private void RequestDelete()
         {
+            Console.WriteLine("[Delete] RequestDelete command executed");
             IsConfirmingDelete = true;
         }
 
         private async Task ConfirmDeleteRequestAsync()
         {
-            if (Request == null) return;
+            Console.WriteLine("[Delete] ConfirmDeleteRequestAsync called");
+            if (Request == null)
+            {
+                Console.WriteLine("[Delete] Request is null, returning");
+                return;
+            }
 
             try
             {
+                Console.WriteLine($"[Delete] Calling API to delete request: {Request.Id}");
                 await _apiService.DeleteRequestAsync(Request.Id);
+                Console.WriteLine("[Delete] API call succeeded");
                 IsConfirmingDelete = false;
                 RequestDeleted?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[Delete] Error: {ex.Message}");
                 SetError(ex);
                 IsConfirmingDelete = false;
             }
